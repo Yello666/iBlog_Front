@@ -39,7 +39,7 @@
         {{ loading ? '注册中...' : '注册' }}
       </button>
 
-      <div v-if="message" :class="['message', success ? 'success' : 'error']">
+      <div v-if="message" :class="['message', code===200 ? 'success' : 'error']">
         {{ message }}
       </div>
     </form>
@@ -60,28 +60,32 @@ export default {
       user: {
         userName: '',
         email: '',
-        password: ''
+        password: '',
+        role:'ROLE_USER'
       },
       loading: false,
       message: '',
-      success: false
+      code:0,
     }
   },
   methods: {
     async register() {
       this.loading = true
       this.message = ''
-
+//通过dispatch调用store/index.js,actions里面的register函数，并传入参数：this.user，由于直接传入了对象，所以actions那里不需要加{}就可以获取user对象
       const result = await this.$store.dispatch('register', this.user)
 
-      if (result.success) {
-        this.message = '注册成功！请登录'
-        this.success = true
+      if (result.code === 200) {
+        this.message = '注册成功！2秒后跳转到登录页'
+        this.code = 200
         this.user = { userName: '', email: '', password: '' }
-      } else {
-        this.message = result.message
-        this.success = false
+
+        // 延迟2秒后跳转
+        setTimeout(() => {
+          this.$router.push('/login')//跳转到登录页面
+        }, 2000) // 2000 毫秒 = 2秒
       }
+
 
       this.loading = false
     }

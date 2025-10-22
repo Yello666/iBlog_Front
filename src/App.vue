@@ -14,13 +14,13 @@
       <div class="nav-links">
 <!--        如果没有登录的话-->
         <template v-if="!isAuthenticated"><!--template是可以讲两个元素弄到一起，相当于一个div的作用，但是不会实际生成一个div，这样易于维护 -->
-          <router-link to="/login" class="nav-btn login-btn">登录</router-link>
-          <router-link to="/register" class="nav-btn register-btn">注册</router-link>
+          <router-link to="/login" class="nav-btn nav-inside-btn">登录</router-link>
+          <router-link to="/register" class="nav-btn nav-inside-btn">注册</router-link>
         </template>
 <!--        已登录状态-->
         <template v-else>
-          <router-link to="/edit">写文章</router-link>
-          <router-link to="/profile">个人中心</router-link>
+          <router-link to="/edit" class="nav-btn nav-inside-btn">写文章</router-link>
+          <router-link to="/profile" class="nav-btn nav-inside-btn">个人中心</router-link>
           <span class="user-info">欢迎, {{ currentUser?.userName }}</span>
           <button @click="logout" class="logout-btn">退出</button>
 <!--          如果是管理员，还有管理页面-->
@@ -44,8 +44,8 @@ export default {
   name: 'iBLOG',// 组件名称（调试和开发工具中显示）,在main.js中引入，用于创建vue项目
   // 通过 Vuex 获取全局状态（登录状态、用户信息等），在store/index.js里面
   computed: {
-    ...mapState(['user']),
-    ...mapGetters(['isAuthenticated', 'currentUser', 'isAdmin'])
+    ...mapState(['user']),//在state中获取
+    ...mapGetters(['isAuthenticated', 'currentUser', 'isAdmin'])//经过计算后的action的getter中获取
   },
   methods: {
     // 定义退出登录的方法
@@ -110,12 +110,14 @@ body {
   gap: 2rem; /* 调整间距以适应按钮 */
 }
 
-/*登陆和注册字体的颜色*/
+/*登陆和注册字体的颜色
+这个是父类，它的样式会掩盖子类，除非在子类的样式里特地标注!important
+*/
+
 .nav-links a {
   color: #4f5288;
   text-decoration: none;
   padding: 0.5rem 1rem;
-  border-radius: 4px;
   transition: background-color 0.3s;
 }
 
@@ -132,35 +134,24 @@ body {
   display: inline-block;
   padding: 0.5rem 1.5rem;
   text-decoration: none;
-  border-radius: 100px; /* 椭圆形 */
+
   font-weight: 500;
   transition: all 0.3s ease;
 
   text-align: center;
-  min-width: 80px;
+  width: 110px;
+  border-radius: 10px; /* 椭圆形 */
 }
 
-.login-btn {
+.nav-inside-btn {
   background: #e4e4f3;
   color: #333;
   border: 2px solid #e4e4f3;
+
 }
 
-.login-btn:hover {
+.nav-inside-btn:hover {
   background: #ffffff;
-  color: #ffffff;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.register-btn {
-  background: #e4e4f3;
-  color: #333;
-  border: 2px solid #e4e4f3;
-}
-
-.register-btn:hover {
-  background: rgba(255, 255, 255, 0.9);
   color: #ffffff;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);

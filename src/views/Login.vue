@@ -50,7 +50,8 @@ export default {
         userName: '',
         password: ''
       },
-      loading: false,
+      loading: false,//loading用于表示 “当前是否正在执行异步操作（比如登录、注册请求）”，
+      // 主要作用是优化用户体验（避免用户重复点击按钮，同时显示 “加载中” 提示）
       error: ''
     }
   },
@@ -58,10 +59,11 @@ export default {
     async login() {
       this.loading = true
       this.error = ''
-
+      //通过dispatch调用store/index.js里面的login函数，并传入一个列表
+      // 里面包括loginInfo对象，在login那里要加{}，才能获取到loginInfo对象
       const result = await this.$store.dispatch('login', { loginInfo: this.loginInfo })
 
-      if (result.success) {
+      if (result.code===200) {
         this.$router.push('/')
       } else {
         this.error = result.message

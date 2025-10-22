@@ -7,7 +7,9 @@
 //     多个组件修改同一数据时容易混乱
 //有了vuex后，所有组件都从这个"中央仓库"读写数据，方便管理。
 //为什么叫vuex？vuex=vue+flux，flux是facebook推出的前端框架，vuex借鉴了然后应用到vue框架上
-import { createStore } from 'vuex' //引入创建仓库的函数
+import { createStore } from 'vuex'
+import {authAPI} from "@/api/auth.js";
+import {userAPI} from "@/api/user.js"; //引入创建仓库的函数
 export default createStore({
     state: { // 数据仓库（相当于 data）
         user: null,// 存储当前登录用户的详细信息（如用户名、角色）
@@ -17,62 +19,71 @@ export default createStore({
         // 判断用户是否登录：Token 存在则为 true（已登录），否则为 false（未登录）
         //！！是强制将返回值转换为bool值的快速写法。
     },
+    // 修改 state 的 “唯一途径”Vuex 规定：不能直接在组件中修改 state，必须通过 mutations 来修改。
+    // mutations 是同步方法，负责更新 state 的数据，确保状态修改可追踪。
     mutations: {
+        //将后端返回的用户信息（user）存入 state.user
         SET_USER(state, user) {
             state.user = user
         },
-
+        // 存储 Token 到 state.token；
         SET_TOKEN(state, token) {
             state.token = token
-            state.isAuthenticated = !!token
-            if (token) {
+            state.isAuthenticated = !!token//更新登录状态 isAuthenticated；
+            if (token) {//将 Token 存入本地存储（localStorage），避免刷新后丢失
                 localStorage.setItem('token', token)
             } else {
                 localStorage.removeItem('token')
             }
         },
-
+        //退出登录操作：
         LOGOUT(state) {
-            state.user = null
+            state.user = null//清空 state 中的用户信息、Token、登录状态；
             state.token = null
             state.isAuthenticated = false
-            localStorage.removeItem('token')
+            localStorage.removeItem('token')//删除本地存储的 Token，实现 “退出登录”
         }
     },
-
+//actions 主要用于处理异步操作（比如调用后端接口）
+// 它不能直接修改 state，而是通过调用 commit('mutation方法名') 来触发 mutations，间接修改 state。
     actions: {
-        async login({ commit }, { loginInfo }) {
+        //用户登陆，commit 是个函数action的每一个函数都要有commit传进来
+        //除了commit参数，其它参数都是通过views下面的.vue文件的dispatch传递过来的，如果那里传进来一个对象列表，那么{}就可以直接获取里面的对象
+        //如果那里直接传入了对象，就不需要{}就可以直接获取对象。
+        async login({ commit }, { loginInfo }) {//接收组件传递的登录信息（loginInfo）
             try {
                 const response = await authAPI.login(loginInfo)
-                if (response.data.success) {
+                //调用 authAPI.login 接口向后端发起登录请求；会调用auth.js
+                if (response.data.code===200) { //data是响应体，code是响应体的一个字段，这个要根据后端返回来具体设定
                     const { token, user } = response.data.data
+                    // 登录成功后，调用 commit 触发 mutations里面的SET_TOKEN
                     commit('SET_TOKEN', token)
                     commit('SET_USER', user)
-                    return { success: true }
+                    return { code: 200 }
                 }
-                return { success: false, message: response.data.message }
+                return { code: response.data.code, message: response.data.message }
             } catch (error) {
-                return { success: false, message: error.response?.data?.message || '登录失败' }
+                return { code: -1, message: error.response?.data?.message || '登录失败' }
             }
         },
-
+        //用户注册
         async register({ commit }, user) {
             try {
                 const response = await authAPI.register(user)
-                return { success: response.data.success, message: response.data.message }
+                return { code: response.data.code, message: response.data.message }
             } catch (error) {
-                return { success: false, message: error.response?.data?.message || '注册失败' }
+                return { code: -1, message: error.response?.data?.message || '注册失败' }
             }
         },
-
+        //退出登录
         logout({ commit }) {
             commit('LOGOUT')
         },
-
+        //获取用户信息
         async fetchUser({ commit }, uid) {
             try {
                 const response = await userAPI.getUser(uid)
-                if (response.data.success) {
+                if (response.data.code===200) {
                     commit('SET_USER', response.data.data)
                 }
             } catch (error) {
@@ -80,7 +91,7 @@ export default createStore({
             }
         }
     },
-
+    //获取store里面的值
     getters: {
         currentUser: state => state.user,
         isAuthenticated: state => state.isAuthenticated,
