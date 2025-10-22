@@ -30,6 +30,7 @@
     </nav>
 <!--<main>：HTML5 语义化标签，用于定义页面的主要内容区域-->
     <main>
+<!--      显示根目录，显示src/route/index.js中定义的/显示的vue组件:Home.vue-->
       <router-view />
     </main>
   </div>

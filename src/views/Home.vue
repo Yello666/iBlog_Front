@@ -1,7 +1,7 @@
 <template>
   <div class="home">
     <div class="hero-section">
-      <h1>欢迎来到博客系统</h1>
+      <h1>欢迎来到iBLOG</h1>
       <p>分享你的想法，发现精彩内容</p>
     </div>
 

@@ -21,9 +21,9 @@
 
         <div class="article-meta">
           作者: {{ article.userName }} |
-          发布时间: {{ formatDate(article.createTime) }} |
-          点赞: {{ article.likes }} |
-          收藏: {{ article.favors }}
+          发布时间: {{ formatDate(article.createdAt) }} |
+          点赞: {{ article.likesCount }} |
+          收藏: {{ article.favorCount }}
         </div>
 
         <div class="article-content">
@@ -55,7 +55,10 @@ export default {
       loading: false,
       page: 1,
       size: 10,
-      hasMore: true
+      hasMore: true,
+      hotArticleNum:3,// 获取3篇热点文章
+
+      error:''
     }
   },
   async mounted() {
@@ -63,13 +66,15 @@ export default {
   },
   methods: {
     async loadArticles() {
+      this.error = '' // 清空错误信息
       this.loading = true
       try {
-        // 这里需要根据实际情况调整，可能需要一个获取所有文章的接口
-        // 暂时使用空数组
-        this.articles = []
+        // 获取3篇热点文章
+        const articlesList=await this.getHotArticles(this.hotArticleNum);
+        this.articles = articlesList;
       } catch (error) {
         console.error('加载文章失败:', error)
+        this.error = '加载文章失败，请稍后重试'
       } finally {
         this.loading = false
       }
@@ -77,7 +82,24 @@ export default {
 
     formatDate(dateString) {
       return new Date(dateString).toLocaleDateString('zh-CN')
+    },
+    async getHotArticles(num) {
+      try {
+        const result = await articleAPI.getHotArticles(num);
+        if (result.code === 200) {
+          return result.data.data;
+        } else {
+          this.error = result.message || '获取热门文章失败';
+          return []
+        }
+      }catch (error){
+        console.error('API调用失败:', error)
+        this.error = '网络错误，请检查连接'
+        return []
+      }
+
     }
+
   }
 }
 </script>

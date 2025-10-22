@@ -5,7 +5,12 @@ export const articleAPI = {
     createArticle(article) {
         return api.post('/article', article)
     },
-
+    //获取热点文章
+    getHotArticles(num=3){
+        return api.get('/article/hot',{
+            params:{num}
+        })
+    },
     // 获取文章详情
     getArticle(aid) {
         return api.get(`/article/${aid}`)
