@@ -1,15 +1,18 @@
 import api from './auth'
 
+
 export const articleAPI = {
     // 创建文章
     createArticle(article) {
         return api.post('/article', article)
     },
-    //获取热点文章
-    getHotArticles(num=3){
-        return api.get('/article/hot',{
+    //获取热点文章,处理异步并返回解析后的数据,否则
+    async getHotArticles(num){
+        //在这里提前做response的解析，在vue组件用到函数的时候，就不用把response.data作为响应体了
+        const response= await api.get('/article/hot',{
             params:{num}
         })
+        return response.data
     },
     // 获取文章详情
     getArticle(aid) {

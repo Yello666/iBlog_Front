@@ -2,8 +2,9 @@ import api from './auth'
 
 export const userAPI = {
     // 获取用户信息
-    getUser(uid) {
-        return api.get(`/user/${uid}`)
+    async getUser(uid) {
+        const response= await api.get(`/user/${uid}`)
+        return response.data;
     },
 
     // 更新用户信息

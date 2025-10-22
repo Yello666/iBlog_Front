@@ -30,7 +30,8 @@ export default defineConfig({
                 rewrite: (path) => path.replace(/^\/api/, '')
                 // /^\/api/这个是正则表达式，/表示正则表达式的边界，/正则表达式/，^是表示以什么作为开头^/api是以/api开头
                 // 反斜杠是转义，就是以/api开头的路由，/api会被替换成空，可以去掉/api
-            }
+            },
+
         }
     },
     //当浏览器请求 /api/xxx 时，

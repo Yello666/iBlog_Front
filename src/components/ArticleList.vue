@@ -20,7 +20,7 @@
         </router-link>
 
         <div class="article-meta">
-          作者: {{ article.userName }} |
+          作者: {{ authorMap[article.uid] }} |
           发布时间: {{ formatDate(article.createdAt) }} |
           点赞: {{ article.likesCount }} |
           收藏: {{ article.favorCount }}
@@ -46,12 +46,15 @@
 
 <script>
 import { articleAPI } from '../api/article'
+import {userAPI} from "@/api/user.js";
 
 export default {
   name: 'ArticleList',
   data() {
     return {
+      authorMap: {}, // 存储 uid -> userName 的映射（关键！）
       articles: [],
+
       loading: false,
       page: 1,
       size: 10,
@@ -69,9 +72,17 @@ export default {
       this.error = '' // 清空错误信息
       this.loading = true
       try {
-        // 获取3篇热点文章
-        const articlesList=await this.getHotArticles(this.hotArticleNum);
-        this.articles = articlesList;
+        // 1. 获取热点文章列表
+        const articlesList = await this.fetchHotArticles(this.hotArticleNum)
+        this.articles = articlesList
+        console.log(articlesList)
+        // 2. 提取所有不重复的 uid（避免重复请求）提取的uid是字符串
+        const uids = [...new Set(articlesList.map(article => article.uid))]
+        console.log(uids)
+        if (uids.length === 0) return
+
+        // 3. 批量获取这些 uid 对应的用户信息，并存入 authorMap
+        this.authorMap = await this.getAuthorMap(uids)
       } catch (error) {
         console.error('加载文章失败:', error)
         this.error = '加载文章失败，请稍后重试'
@@ -83,13 +94,14 @@ export default {
     formatDate(dateString) {
       return new Date(dateString).toLocaleDateString('zh-CN')
     },
-    async getHotArticles(num) {
+    async fetchHotArticles(num) {
       try {
-        const result = await articleAPI.getHotArticles(num);
-        if (result.code === 200) {
-          return result.data.data;
+        const response = await articleAPI.getHotArticles(num);
+
+        if (response.code === 200) {
+          return response.data;
         } else {
-          this.error = result.message || '获取热门文章失败';
+          this.error = response.message || '获取热门文章失败';
           return []
         }
       }catch (error){
@@ -98,7 +110,28 @@ export default {
         return []
       }
 
-    }
+    },
+    async getAuthorMap(uids){
+      const authorMap = {}
+      for (const uid of uids) {
+        console.log(uid)
+        try {
+          // 调用用户 API 获取单个用户信息
+          const response = await userAPI.getUser(uid)
+          if (response.code === 200) {
+            // 接口返回 { data: { uid, userName,....} }
+            authorMap[uid] = response.data.userName
+          } else {
+            authorMap[uid] = '未知用户'
+          }
+        } catch (error) {
+          console.error(`获取 uid=${uid} 的用户信息失败:`, error)
+          authorMap[uid] = '获取失败'
+        }
+      }
+      return authorMap
+    },
+
 
   }
 }
