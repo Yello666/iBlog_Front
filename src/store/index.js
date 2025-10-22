@@ -1,12 +1,22 @@
-import { createStore } from 'vuex'
-
+// Vuex Store 核心配置文件，作用是集中管理整个应用的共享状态（比如用户登录状态、Token、用户信息），
+// 并提供统一的方法来修改和获取这些状态。
+//vuex是vue项目的全局状态管理库，它就像一个"全局变量仓库"，用来集中管理所有组件共享的数据。
+//在没有 Vuex 时：
+//     组件之间传递数据很麻烦（特别是sibling组件）
+//     数据流不清晰，难以追踪状态变化
+//     多个组件修改同一数据时容易混乱
+//有了vuex后，所有组件都从这个"中央仓库"读写数据，方便管理。
+//为什么叫vuex？vuex=vue+flux，flux是facebook推出的前端框架，vuex借鉴了然后应用到vue框架上
+import { createStore } from 'vuex' //引入创建仓库的函数
 export default createStore({
-    state: {
-        user: null,
-        token: localStorage.getItem('token') || null,
+    state: { // 数据仓库（相当于 data）
+        user: null,// 存储当前登录用户的详细信息（如用户名、角色）
+        token: localStorage.getItem('token') || null,// 存储用户登录凭证（Token）
+        // 从本地存储读取 Token，实现“刷新页面后保持登录状态”
         isAuthenticated: !!localStorage.getItem('token')
+        // 判断用户是否登录：Token 存在则为 true（已登录），否则为 false（未登录）
+        //！！是强制将返回值转换为bool值的快速写法。
     },
-
     mutations: {
         SET_USER(state, user) {
             state.user = user

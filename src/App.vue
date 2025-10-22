@@ -1,49 +1,65 @@
+<!--App.vue = 网站的"外壳"或"框架"（永远显示的部分）-->
+<!--.vue 文件是 Vue 组件的 “一站式” 文件，整合了结构（template）、逻辑（script）、样式（style），让组件更模块化、易维护。-->
+<!--<template>：Vue 组件的模板根标签，定义了组件的 HTML 结构-->
 <template>
+<!--  <div id="app">整个应用的最外层容器，通过id="app"标识（通常与入口文件中的挂载点对应）-->
   <div id="app">
+    <!--      <nav></nav>是导航栏，是固定语法-->
     <nav class="navbar">
-      <div class="nav-brand">
-        <router-link to="/">博客系统</router-link>
+      <div class="nav-brand"> <!--nav-brand是网站logo -->
+<!--        <router-link to="/">：Vue Router 提供的路由链接组件，
+  to="/"表示点击后跳转到网站首页（根路径），在src/router/index.js中定义，相当于传统的<a href="/">但不会刷新页面-->
+        <router-link to="/">iBLOG</router-link>
       </div>
       <div class="nav-links">
-        <router-link to="/">首页</router-link>
-        <template v-if="!isAuthenticated">
-          <router-link to="/login">登录</router-link>
-          <router-link to="/register">注册</router-link>
+<!--        如果没有登录的话-->
+        <template v-if="!isAuthenticated"><!--template是可以讲两个元素弄到一起，相当于一个div的作用，但是不会实际生成一个div，这样易于维护 -->
+          <router-link to="/login" class="nav-btn login-btn">登录</router-link>
+          <router-link to="/register" class="nav-btn register-btn">注册</router-link>
         </template>
+<!--        已登录状态-->
         <template v-else>
           <router-link to="/edit">写文章</router-link>
           <router-link to="/profile">个人中心</router-link>
           <span class="user-info">欢迎, {{ currentUser?.userName }}</span>
           <button @click="logout" class="logout-btn">退出</button>
+<!--          如果是管理员，还有管理页面-->
           <router-link v-if="isAdmin" to="/admin" class="admin-link">管理</router-link>
         </template>
       </div>
     </nav>
+<!--<main>：HTML5 语义化标签，用于定义页面的主要内容区域-->
     <main>
       <router-view />
     </main>
   </div>
 </template>
 
+<!--<script> 标签内的代码用于定义组件的逻辑部分-->
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex'
 
+//导出了APP，会在main.js里面被引用
 export default {
-  name: 'App',
+  name: 'iBLOG',// 组件名称（调试和开发工具中显示）,在main.js中引入，用于创建vue项目
+  // 通过 Vuex 获取全局状态（登录状态、用户信息等），在store/index.js里面
   computed: {
     ...mapState(['user']),
     ...mapGetters(['isAuthenticated', 'currentUser', 'isAdmin'])
   },
   methods: {
+    // 定义退出登录的方法
     logout() {
-      this.$store.dispatch('logout')
-      this.$router.push('/login')
+      this.$store.dispatch('logout')// 调用 Vuex 的 logout 动作（清除登录状态）
+      this.$router.push('/login')// 跳转到登录页
     }
   }
 }
 </script>
-
+<!--页面样式设计在style里面-->
 <style>
+/*清除默认边距，使用 border-box 盒模型*/
+/*浏览器有默认样式，不同的元素有不同的默认 margin 和 padding，所以需要将所有元素的margin和padding都清0*/
 * {
   margin: 0;
   padding: 0;
@@ -58,30 +74,45 @@ body {
 }
 
 .navbar {
-  background: #2c3e50;
-  color: white;
+  /* css的注释是这样写的，background: #0a22cd;*/
+  /*渐变的背景*/
+  /*background: linear-gradient(to right, #1c1f55, #343187, rgba(41, 34, 175, 0.73));*/
+  background: #122165;
+  /*字体颜色*/
+  color: #1b1919;
   padding: 1rem 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  height: 60px;
+
 }
 
 .nav-brand a {
-  color: white;
+  /* 字体颜色渐变 */
+  background: linear-gradient(to bottom, #ffffff, #5588f4);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent; /* 备用 */
+
   text-decoration: none;
-  font-size: 1.5rem;
-  font-weight: bold;
+  font-size: 1.5rem;/*字体大小*/
+  font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-weight: 1000;
 }
 
+/* 确保导航链接的间距适应新按钮 */
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 2rem; /* 调整间距以适应按钮 */
 }
 
+/*登陆和注册字体的颜色*/
 .nav-links a {
-  color: white;
+  color: #4f5288;
   text-decoration: none;
   padding: 0.5rem 1rem;
   border-radius: 4px;
@@ -93,8 +124,48 @@ body {
 }
 
 .nav-links a.router-link-active {
-  background-color: #3498db;
+  background-color: #8a8eae;
+  color:white;
 }
+
+.nav-btn {
+  display: inline-block;
+  padding: 0.5rem 1.5rem;
+  text-decoration: none;
+  border-radius: 100px; /* 椭圆形 */
+  font-weight: 500;
+  transition: all 0.3s ease;
+
+  text-align: center;
+  min-width: 80px;
+}
+
+.login-btn {
+  background: #e4e4f3;
+  color: #333;
+  border: 2px solid #e4e4f3;
+}
+
+.login-btn:hover {
+  background: #ffffff;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.register-btn {
+  background: #e4e4f3;
+  color: #333;
+  border: 2px solid #e4e4f3;
+}
+
+.register-btn:hover {
+  background: rgba(255, 255, 255, 0.9);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
 
 .user-info {
   color: #ecf0f1;
