@@ -23,7 +23,8 @@ export default defineConfig({
     server: {
         proxy: {
             '/api': {//会匹配开头带有/api的请求
-                target: 'http://localhost:8080',//转发到这个地址
+                target: 'http://8.155.144.213:8080',//转发到这个地址
+                //target: 'http://localhost:8080',//转发到这个地址
                 changeOrigin: true,//将http请求头的origin字段改成后端服务器的地址，"骗过"服务器的跨域检查。
                 //因为原本后端服务器会拒绝跨域访问（防止CSRF攻击）
 

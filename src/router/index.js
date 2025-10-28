@@ -26,7 +26,7 @@ const routes = [//定义路由规则（routes 数组）
         meta: { requiresGuest: true }
     },
     {
-        path: '/article/:id',// 文章详情页：`:id` 是动态参数（如 `/article/123` 表示 ID 为 123 的文章）
+        path: '/article/:aid',// 文章详情页：`:aid` 是动态参数（如 `/article/123` 表示 ID 为 123 的文章）
         name: 'ArticleDetail',
         component: () => import('../views/ArticleDetail.vue')
     },
@@ -37,7 +37,7 @@ const routes = [//定义路由规则（routes 数组）
         meta: { requiresAuth: true }// 元信息：需登录才能访问
     },
     {
-        path: '/edit/:id',
+        path: '/edit/:aid',
         name: 'ArticleEdit',
         component: () => import('../views/ArticleEdit.vue'),
         meta: { requiresAuth: true }// 元信息：需登录才能访问

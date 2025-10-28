@@ -64,6 +64,10 @@ export default {
       error:''
     }
   },
+  // 新增：每次组件激活（如从其他页面返回）时重新加载数据
+  activated() {
+    this.loadArticles() // 重新获取最新数据
+  },
   async mounted() {
     await this.loadArticles()
   },
@@ -75,10 +79,10 @@ export default {
         // 1. 获取热点文章列表
         const articlesList = await this.fetchHotArticles(this.hotArticleNum)
         this.articles = articlesList
-        console.log(articlesList)
+        // console.log(articlesList)
         // 2. 提取所有不重复的 uid（避免重复请求）提取的uid是字符串
         const uids = [...new Set(articlesList.map(article => article.uid))]
-        console.log(uids)
+        // console.log(uids)
         if (uids.length === 0) return
 
         // 3. 批量获取这些 uid 对应的用户信息，并存入 authorMap
@@ -146,5 +150,9 @@ export default {
 
 .article-tags {
   margin-top: 1rem;
+}
+
+.article-title:hover{
+  color: #559af4;
 }
 </style>

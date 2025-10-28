@@ -3,8 +3,9 @@ import api from './auth'
 
 export const articleAPI = {
     // 创建文章
-    createArticle(article) {
-        return api.post('/article', article)
+    async createArticle(article) {
+        const response= await api.post('/article', article)
+        return response.data
     },
     //获取热点文章,处理异步并返回解析后的数据,否则
     async getHotArticles(num){
@@ -15,8 +16,9 @@ export const articleAPI = {
         return response.data
     },
     // 获取文章详情
-    getArticle(aid) {
-        return api.get(`/article/${aid}`)
+    async getArticle(aid) {
+        const response= await api.get(`/article/${aid}`)
+        return response.data
     },
 
     // 获取用户文章列表
@@ -48,30 +50,34 @@ export const articleAPI = {
     },
 
     // 点赞文章
-    likeArticle(aid, uid) {
-        return api.post('/article/like', null, {
+    async likeArticle(aid, uid) {
+        const response=await api.post('/article/like', null, {
             params: { aid, uid }
         })
+        return response.data
     },
 
     // 取消点赞
-    undoLikeArticle(aid, uid) {
-        return api.post('/article/undoLike', null, {
+    async undoLikeArticle(aid, uid) {
+        const response=await api.post('/article/undoLike', null, {
             params: { aid, uid }
         })
+        return response.data
     },
 
     // 收藏文章
-    favorArticle(aid, uid) {
-        return api.post('/article/favor', null, {
+    async favorArticle(aid, uid) {
+        const response=await api.post('/article/favor', null, {
             params: { aid, uid }
         })
+        return response.data
     },
 
     // 取消收藏
-    undoFavorArticle(aid, uid) {
-        return api.post('/article/undoFavor', null, {
+    async undoFavorArticle(aid, uid) {
+        const response=await api.post('/article/undoFavor', null, {
             params: { aid, uid }
         })
+        return response.data
     }
 }

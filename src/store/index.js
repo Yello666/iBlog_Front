@@ -12,7 +12,7 @@ import {authAPI} from "@/api/auth.js";
 import {userAPI} from "@/api/user.js"; //引入创建仓库的函数
 export default createStore({
     state: { // 数据仓库（相当于 data）
-        user: null,// 存储当前登录用户的详细信息（如用户名、角色）
+        user: JSON.parse(localStorage.getItem('user')) || null,  // 存储当前登录用户的详细信息（如用户名、角色）
         token: localStorage.getItem('token') || null,// 存储用户登录凭证（Token）
         // 从本地存储读取 Token，实现“刷新页面后保持登录状态”
         isAuthenticated: !!localStorage.getItem('token')
@@ -25,6 +25,11 @@ export default createStore({
         //将后端返回的用户信息（user）存入 state.user
         SET_USER(state, user) {
             state.user = user
+            if (user) {
+                localStorage.setItem('user', JSON.stringify(user))
+            } else {
+                localStorage.removeItem('user')
+            }
         },
         // 存储 Token 到 state.token；
         SET_TOKEN(state, token) {
@@ -34,14 +39,16 @@ export default createStore({
                 localStorage.setItem('token', token)
             } else {
                 localStorage.removeItem('token')
+                localStorage.removeItem('user')  // ✅ 清理用户信息
             }
         },
         //退出登录操作：
         LOGOUT(state) {
-            state.user = null//清空 state 中的用户信息、Token、登录状态；
+            state.user = null//清空 state 中的用户信息、Token、登录状态
             state.token = null
             state.isAuthenticated = false
             localStorage.removeItem('token')//删除本地存储的 Token，实现 “退出登录”
+            localStorage.removeItem('user')  // ✅ 退出时清理
         }
     },
 //actions 主要用于处理异步操作（比如调用后端接口）
