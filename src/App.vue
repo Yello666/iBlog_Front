@@ -19,7 +19,7 @@
         </template>
 <!--        已登录状态-->
         <template v-else>
-          <router-link to="/edit" class="nav-btn nav-inside-btn">写文章</router-link>
+          <router-link to="/article" class="nav-btn nav-inside-btn">写文章</router-link>
           <router-link to="/profile" class="nav-btn nav-inside-btn">个人中心</router-link>
           <span class="user-info">欢迎, {{ currentUser?.userName }}</span>
           <button @click="logout" class="logout-btn">退出</button>

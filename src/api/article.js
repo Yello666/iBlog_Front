@@ -16,37 +16,44 @@ export const articleAPI = {
         return response.data
     },
     // 获取文章详情
-    async getArticle(aid) {
-        const response= await api.get(`/article/${aid}`)
+    async getArticle(aid,uid) {
+        const response= await api.get(`/article/${aid}`,{
+            params:{uid}
+        })
+
         return response.data
     },
 
     // 获取用户文章列表
-    getUserArticles(uid, page = 1, size = 10) {
-        return api.get(`/article/user/${uid}`, {
+    async getUserArticles(uid, page = 1, size = 10) {
+        const response= await api.get(`/article/user/${uid}`, {
             params: { page, size }
         })
+        return response.data
     },
 
     // 更新文章
-    updateArticle(aid, article) {
-        return api.put('/article', article, {
+    async updateArticle(aid, article) {
+        const response= await api.put('/article', article, {
             params: { aid }
         })
+        return response.data
     },
 
     // 删除文章
-    deleteArticle(aid, uid) {
-        return api.delete('/article', {
+    async deleteArticle(aid, uid) {
+    const response= await api.delete('/article', {
             params: { aid, uid }
         })
+        return response.data
     },
 
     // 管理员删除文章
-    adminDeleteArticle(aid) {
-        return api.delete('/admin/article', {
+    async adminDeleteArticle(aid) {
+    const response= await api.delete('/admin/article', {
             params: { aid }
         })
+        return response.data
     },
 
     // 点赞文章

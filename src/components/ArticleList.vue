@@ -59,7 +59,7 @@ export default {
       page: 1,
       size: 10,
       hasMore: true,
-      hotArticleNum:3,// 获取3篇热点文章
+      hotArticleNum:5,// 获取3篇热点文章
 
       error:''
     }

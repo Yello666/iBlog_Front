@@ -3,17 +3,13 @@
     <h3>评论区</h3>
 
     <!-- 发表评论 -->
-    <div v-if="currentUid" class="comment-input">
+    <div class="comment-input">
       <textarea
-          v-model="newComment.content"
+          v-model="newComment.contents"
           placeholder="写下你的评论..."
           rows="3"
       ></textarea>
       <button @click="publishComment">发表评论</button>
-    </div>
-
-    <div v-else class="login-prompt">
-      请先<a href="/login">登录</a>后发表评论
     </div>
 
     <!-- 评论列表 -->
@@ -21,9 +17,9 @@
       <div v-for="comment in comments" :key="comment.cid" class="comment-item">
         <div class="comment-header">
           <span class="comment-author">{{ comment.userName || '匿名用户' }}</span>
-          <span class="comment-time">{{ formatDate(comment.createTime) }}</span>
+          <span class="comment-time">{{ formatDate(comment.createdAt) }}</span>
         </div>
-        <div class="comment-content">{{ comment.content }}</div>
+        <div class="comment-content">{{ comment.contents }}</div>
         <div class="comment-actions">
           <button
               class="like-btn"
@@ -37,7 +33,7 @@
           <!-- 回复输入框 -->
           <div v-if="comment.showReplyInput" class="reply-input">
             <textarea
-                v-model="comment.replyContent"
+                v-model="comment.replyContents"
                 placeholder="回复..."
                 rows="2"
             ></textarea>
@@ -49,9 +45,13 @@
 
           <!-- 回复列表 -->
           <div class="replies" v-if="comment.replies && comment.replies.length">
-            <div v-for="reply in comment.replies" :key="reply.rid" class="reply-item">
+            <div
+                v-for="reply in comment.replies"
+                :key="reply.rid"
+                class="reply-item"
+            >
               <span class="reply-author">{{ reply.userName }}</span>
-              <span class="reply-content">{{ reply.content }}</span>
+              <span class="reply-content">{{ reply.contents }}</span>
               <span class="reply-time">{{ formatDate(reply.createTime) }}</span>
             </div>
           </div>
@@ -61,10 +61,7 @@
 
     <!-- 分页 -->
     <div class="pagination" v-if="totalPages > 1">
-      <button
-          @click="changePage(currentPage - 1)"
-          :disabled="currentPage === 1"
-      >
+      <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1">
         上一页
       </button>
       <span>{{ currentPage }} / {{ totalPages }}</span>
@@ -78,170 +75,142 @@
   </div>
 </template>
 
-<script>
-// 引入 Vue API 和评论接口
+<script setup>
 import { ref, onMounted, defineProps } from 'vue'
 import { commentAPI } from '@/api/comment'
 
-export default {
-  // 接收父组件传参（JS 用 defineProps 直接定义，无需类型）
-  props: defineProps({
-    aid: {
-      type: Number,
-      required: true
-    },
-    currentUid: {
-      type: [Number, null],
-      required: true
-    }
-  }),
-  setup(props) {
-    // 状态管理（去掉TS类型声明）
-    const comments = ref([])
-    const newComment = ref({ content: '' })
-    const currentPage = ref(1)
-    const pageSize = ref(10)
-    const totalComments = ref(0)
-    const totalPages = ref(0)
+// ✅ 接收父组件传入的属性
+const props = defineProps({
+  aid: {
+    type: [Number, String],
+    required: true
+  },
+  currentUid: {
+    type: [Number, String],
+    required: true
+  }
+})
 
-    // 格式化日期（去掉参数类型）
-    const formatDate = (dateString) => {
-      const date = new Date(dateString)
-      return date.toLocaleString()
-    }
+console.log('评论区接收的 props.currentUid 值:', props.currentUid)
+console.log('评论区接收的 props.aid 值:', props.aid)
 
-    // 加载评论（去掉参数和返回值类型）
-    const loadComments = async () => {
-      try {
-        const data = await commentAPI.getArticleComments(
-            props.aid,
-            currentPage.value,
-            pageSize.value
-        )
+// 状态管理
+const comments = ref([])
+const newComment = ref({ contents: '' })
+const currentPage = ref(1)
+const pageSize = ref(10)
+const totalComments = ref(0)
+const totalPages = ref(0)
 
-        // 处理评论数据，添加回复相关状态
-        comments.value = data.comments.map(comment => ({
-          ...comment,
-          showReplyInput: false,
-          replyContent: ''
-        }))
+// 格式化日期
+const formatDate = (dateString) => {
+  const date = new Date(dateString)
+  return date.toLocaleString()
+}
 
-        totalComments.value = data.total
-        totalPages.value = Math.ceil(totalComments.value / pageSize.value)
-      } catch (error) {
-        console.error('加载评论失败:', error)
-      }
-    }
-
-    // 发表评论（去掉类型声明）
-    const publishComment = async () => {
-      if (!newComment.value.content.trim() || !props.currentUid) return
-
-      try {
-        await commentAPI.publishComment({
-          aid: props.aid,
-          uid: props.currentUid,
-          content: newComment.value.content
-        })
-
-        // 清空输入框并刷新评论
-        newComment.value.content = ''
-        currentPage.value = 1
-        loadComments()
-      } catch (error) {
-        console.error('发表评论失败:', error)
-      }
-    }
-
-    // 评论点赞（去掉类型声明）
-    const likeComment = async (cid) => {
-      if (!props.currentUid) return
-
-      try {
-        const comment = comments.value.find(c => c.cid === cid)
-        if (!comment) return
-
-        if (comment.isLiked) {
-          await commentAPI.unlikeComment(cid)
-          comment.likeCount--
-        } else {
-          await commentAPI.likeComment(cid)
-          comment.likeCount++
-        }
-        comment.isLiked = !comment.isLiked
-      } catch (error) {
-        console.error('评论点赞失败:', error)
-      }
-    }
-
-    // 回复评论相关（去掉类型声明）
-    const replyToComment = (comment) => {
-      // 关闭其他评论的回复框
-      comments.value.forEach(c => {
-        if (c.cid !== comment.cid) {
-          c.showReplyInput = false
-        }
-      })
-      comment.showReplyInput = !comment.showReplyInput
-    }
-
-    const cancelReply = (comment) => {
-      comment.showReplyInput = false
-      comment.replyContent = ''
-    }
-
-    const submitReply = async (comment) => {
-      if (!comment.replyContent?.trim() || !props.currentUid) return
-
-      try {
-        await commentAPI.replyComment(comment.cid, {
-          uid: props.currentUid,
-          content: comment.replyContent
-        })
-
-        // 重新加载该评论的回复
-        const replies = await commentAPI.getReplies(comment.cid)
-        comment.replies = replies
-        comment.replyContent = ''
-        comment.showReplyInput = false
-      } catch (error) {
-        console.error('回复评论失败:', error)
-      }
-    }
-
-    // 分页切换（去掉类型声明）
-    const changePage = (page) => {
-      if (page < 1 || page > totalPages.value) return
-      currentPage.value = page
-      loadComments()
-    }
-
-    // 初始化加载评论
-    onMounted(() => {
-      loadComments()
-    })
-
-    // 暴露变量和方法到模板
-    return {
-      comments,
-      newComment,
-      currentPage,
-      totalPages,
-      formatDate,
-      loadComments,
-      publishComment,
-      likeComment,
-      replyToComment,
-      cancelReply,
-      submitReply,
-      changePage
-    }
+// 加载评论
+const loadComments = async () => {
+  try {
+    console.log("加载评论。。。")
+    const response = await commentAPI.getArticleComments(
+        Number(props.aid),
+        currentPage.value,
+        pageSize.value
+    )
+    console.log(response)
+    comments.value = response.data.records.map(comment => ({
+      ...comment,
+      showReplyInput: false,
+      replyContents: ''
+    }))
+    totalComments.value = response.data.total
+    totalPages.value = Math.ceil(totalComments.value / pageSize.value)
+  } catch (error) {
+    console.error('加载评论失败:', error)
   }
 }
+
+// 发表评论
+const publishComment = async () => {
+  //如果内容不为空或者已经登陆就继续
+  if (!newComment.value.contents.trim() || !props.currentUid) return
+  try {
+    await commentAPI.publishComment({
+      aid: props.aid,
+      uid: props.currentUid,
+      contents: newComment.value.contents
+    })
+    newComment.value.contents = ''
+    currentPage.value = 1
+    loadComments()
+  } catch (error) {
+    console.error('发表评论失败:', error)
+  }
+}
+
+// 点赞
+const likeComment = async (cid) => {
+  if (!props.currentUid) return
+  try {
+    const comment = comments.value.find(c => c.cid === cid)
+    if (!comment) return
+    if (comment.isLiked) {
+      await commentAPI.unlikeComment(cid)
+      comment.likeCount--
+    } else {
+      await commentAPI.likeComment(cid)
+      comment.likeCount++
+    }
+    comment.isLiked = !comment.isLiked
+  } catch (error) {
+    console.error('评论点赞失败:', error)
+  }
+}
+
+// 回复逻辑
+const replyToComment = (comment) => {
+  comments.value.forEach(c => {
+    if (c.cid !== comment.cid) c.showReplyInput = false
+  })
+  comment.showReplyInput = !comment.showReplyInput
+}
+
+const cancelReply = (comment) => {
+  comment.showReplyInput = false
+  comment.replyContents = ''
+}
+
+const submitReply = async (comment) => {
+  if (!comment.replyContents?.trim() || !props.currentUid) return
+  try {
+    await commentAPI.replyComment(comment.cid, {
+      uid: props.currentUid,
+      contents: comment.replyContents
+    })
+    const replies = await commentAPI.getReplies(comment.cid)
+    comment.replies = replies
+    comment.replyContent = ''
+    comment.showReplyInput = false
+  } catch (error) {
+    console.error('回复评论失败:', error)
+  }
+}
+
+// 分页
+const changePage = (page) => {
+  if (page < 1 || page > totalPages.value) return
+  currentPage.value = page
+  loadComments()
+}
+
+// 初始化加载
+onMounted(() => {
+  loadComments()
+})
 </script>
 
 <style scoped>
-/* 样式部分完全不变 */
+/* ✅ 你的原样式保持不变 */
 .comment-section {
   margin-top: 3rem;
 }

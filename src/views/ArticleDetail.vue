@@ -43,11 +43,11 @@
 
       <!-- 评论区组件 -->
       <CommentSection
+          v-if="currentUid"
           :aid="article.aid"
           :current-uid="currentUid"
       />
     </div>
-
     <!-- 错误状态 -->
     <div v-else class="error">文章加载失败</div>
   </div>
@@ -58,7 +58,6 @@
 import {ref, onMounted, computed} from 'vue'
 import { useRoute } from 'vue-router'
 import { articleAPI } from '@/api/article'
-// 注意：确保 CommentSection 组件路径正确（这里按你之前的路径调整）
 import CommentSection from '../components/CommentList.vue'
 import {useStore} from "vuex";
 
@@ -73,7 +72,8 @@ export default {
     const store = useStore()
     const currentUser = computed(() => store.getters.currentUser)
     const currentUid = computed(() => currentUser.value?.uid) //currentUser.value存在的话，就获取其uid
-
+    console.log("uid:{}",currentUid.value)
+    console.log("uid type:",typeof currentUid.value)
     // 格式化日期（去掉参数类型）
     const formatDate = (dateString) => {
       const date = new Date(dateString)
@@ -83,7 +83,6 @@ export default {
     // 处理点赞（去掉参数和返回值类型）
     const handleLike = async () => {
       if (!article.value || !currentUid.value){
-        console.log(currentUid.value)
         alert('请先登录哟～～～')
         return
       }
@@ -91,10 +90,10 @@ export default {
 
       try {
         if (article.value.isLiked) {
-          await articleAPI.undoLikeArticle(article.value.aid, currentUid.value)
+          await articleAPI.undoLikeArticle(article.value.aid, Number(currentUid.value))
           article.value.likesCount--
         } else {
-          await articleAPI.likeArticle(article.value.aid, currentUid.value)
+          await articleAPI.likeArticle(article.value.aid, Number(currentUid.value))
           article.value.likesCount++
         }
         article.value.isLiked = !article.value.isLiked
@@ -111,10 +110,10 @@ export default {
       }
       try {
         if (article.value.isFavored) {
-          await articleAPI.undoFavorArticle(article.value.aid, currentUid.value)
+          await articleAPI.undoFavorArticle(article.value.aid, Number(currentUid.value))
           article.value.favorCount--
         } else {
-          await articleAPI.favorArticle(article.value.aid, currentUid.value)
+          await articleAPI.favorArticle(article.value.aid, Number(currentUid.value))
           article.value.favorCount++
         }
         article.value.isFavored = !article.value.isFavored
@@ -133,14 +132,13 @@ export default {
         console.log("aid:",aid)
 
         loading.value = true
-        const response = await articleAPI.getArticle(Number(aid))
+        const response = await articleAPI.getArticle(Number(aid),Number(currentUid.value))
         article.value = response.data
         console.log(article.value)
-        article.value.isLiked = !!article.value.isLiked
-        article.value.isFavored = !!article.value.isFavored
+        article.value.isLiked = response.data.liked
+        article.value.isFavored = response.data.favored
         article.value.likesCount = article.value.likesCount || 0
         article.value.favorCount = article.value.favorCount || 0
-        console.log("uid",currentUid)
       } catch (error) {
         console.error('加载文章失败:', error)
         article.value = null

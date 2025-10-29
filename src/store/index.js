@@ -23,6 +23,7 @@ export default createStore({
     // mutations 是同步方法，负责更新 state 的数据，确保状态修改可追踪。
     mutations: {
         //将后端返回的用户信息（user）存入 state.user
+        //存储的uid是字符串
         SET_USER(state, user) {
             state.user = user
             if (user) {
@@ -61,23 +62,29 @@ export default createStore({
             try {
                 const response = await authAPI.login(loginInfo)
                 //调用 authAPI.login 接口向后端发起登录请求；会调用auth.js
-                if (response.data.code===200) { //data是响应体，code是响应体的一个字段，这个要根据后端返回来具体设定
-                    const { token, user } = response.data.data
+                if (response.code===200) {
+                    const { token, user } = response.data
                     // 登录成功后，调用 commit 触发 mutations里面的SET_TOKEN
+                    // 关键修复：将 uid 转为字符串（无论后端返回的是数字还是字符串）
+                    console.log("user object:",user)
+                    if (user?.uid) {
+                        user.uid = user.uid.toString()
+                        console.log("user id:",user.uid)
+                    }
                     commit('SET_TOKEN', token)
                     commit('SET_USER', user)
                     return { code: 200 }
                 }
-                return { code: response.data.code, message: response.data.message }
+                return { code: response.code, message: response.message }
             } catch (error) {
-                return { code: -1, message: error.response?.data?.message || '登录失败' }
+                return { code: -1, message: error.response?.message || '登录失败' }
             }
         },
         //用户注册
         async register({ commit }, user) {
             try {
                 const response = await authAPI.register(user)
-                return { code: response.data.code, message: response.data.message }
+                return { code: response.code, message: response.message }
             } catch (error) {
                 return { code: -1, message: error.response?.data?.message || '注册失败' }
             }
@@ -90,8 +97,8 @@ export default createStore({
         async fetchUser({ commit }, uid) {
             try {
                 const response = await userAPI.getUser(uid)
-                if (response.data.code===200) {
-                    commit('SET_USER', response.data.data)
+                if (response.code===200) {
+                    commit('SET_USER', response.data.user)
                 }
             } catch (error) {
                 console.error('获取用户信息失败:', error)

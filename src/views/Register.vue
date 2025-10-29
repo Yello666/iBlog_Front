@@ -73,6 +73,7 @@ export default {
       this.loading = true
       this.message = ''
 //通过dispatch调用store/index.js,actions里面的register函数，并传入参数：this.user，由于直接传入了对象，所以actions那里不需要加{}就可以获取user对象
+    try{
       const result = await this.$store.dispatch('register', this.user)
 
       if (result.code === 200) {
@@ -84,10 +85,20 @@ export default {
         setTimeout(() => {
           this.$router.push('/login')//跳转到登录页面
         }, 2000) // 2000 毫秒 = 2秒
+      }else {
+        // 后端返回失败（如用户名已存在）
+        this.message = result.message || '注册失败，请稍后再试'
+        this.code = result.code || -1
       }
-
-
+    } catch (error) {
+      // 捕获网络错误或前端代码错误（如之前的authAPI异步处理错误）
+      console.error('注册过程发生错误:', error)
+      this.message = '网络异常，注册失败，请检查网络后重试'
+      this.code = -1 // 标记为网络错误
+    } finally {
+      // 无论成功/失败，都结束加载状态
       this.loading = false
+    }
     }
   }
 }

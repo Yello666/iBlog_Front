@@ -6,7 +6,7 @@
     </div>
 
     <div class="articles-section">
-      <h2>最新文章</h2>
+      <h2>推荐文章</h2>
       <ArticleList />
     </div>
   </div>
