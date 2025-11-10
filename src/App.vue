@@ -20,7 +20,20 @@
 <!--        已登录状态-->
         <template v-else>
           <router-link to="/article" class="nav-btn nav-inside-btn">写文章</router-link>
-          <router-link to="/profile" class="nav-btn nav-inside-btn">个人中心</router-link>
+<!--          <router-link to="/profile" class="nav-btn nav-inside-btn">个人中心</router-link>-->
+          <!-- 个人中心下拉菜单 -->
+          <div class="user-menu">
+            <button class="user-menu-trigger">个人中心</button>
+            <div class="user-menu-dropdown">
+              <router-link to="/profile" class="dropdown-item">个人资料</router-link>
+              <button
+                  @click="goToMyArticles"
+                  class="dropdown-item"
+              >
+                我的文章
+              </button>
+            </div>
+          </div>
           <span class="user-info">欢迎, {{ currentUser?.userName }}</span>
           <button @click="logout" class="logout-btn">退出</button>
 <!--          如果是管理员，还有管理页面-->
@@ -53,6 +66,16 @@ export default {
     logout() {
       this.$store.dispatch('logout')// 调用 Vuex 的 logout 动作（清除登录状态）
       this.$router.push('/login')// 跳转到登录页
+    },
+    // 跳转到我的文章页面
+    goToMyArticles() {
+      // 检查登录状态（双重保险）
+      if (!this.isAuthenticated) {
+        alert('请先登录')
+        return
+      }
+      // 跳转到用户文章列表页
+      this.$router.push(`/articles/user/${this.currentUser.uid}`)//uid是字符串也没有关系，还是/user/123
     }
   }
 }
@@ -89,7 +112,74 @@ body {
   height: 60px;
 
 }
+/* 个人中心下拉菜单样式 */
+.user-menu {
+  position: relative;
+  display: inline-block;
+}
 
+.user-menu-trigger {
+  background: #e4e4f3;
+  color: #4f5288 !important;
+  border: 2px solid #e4e4f3;
+  display: inline-block;
+  width: 120px;
+  height:45px;
+  padding: 0.5rem;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  text-align: center;
+
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.user-menu-trigger:hover {
+  background: #30337c;
+  color: #ffffff !important;
+
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* 下拉菜单容器 */
+.user-menu-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  min-width: 120px;
+  background-color: white;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  z-index: 1000;
+  display: none; /* 默认隐藏 */
+  margin-top: 2px;
+}
+
+/* 下拉菜单项 */
+.dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 10px 15px;
+  text-align: left;
+  background: none;
+  border: none;
+  color: #4f5288;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: medium;
+}
+
+.dropdown-item:hover {
+  background-color: #f5f5f5;
+}
+
+/* 悬停显示下拉菜单 */
+.user-menu:hover .user-menu-dropdown {
+  display: block;
+}
 .nav-brand a {
   /* 字体颜色渐变 */
   background: linear-gradient(to bottom, #ffffff, #5588f4);
@@ -118,12 +208,12 @@ body {
 .nav-links a {
   color: #4f5288;
   text-decoration: none;
-  padding: 0.5rem 1rem;
+  padding: 0.5rem;
   transition: background-color 0.3s;
 }
 
 .nav-links a:hover {
-  background-color: rgba(255,255,255,0.1);
+  background-color: rgba(0, 0, 0, 0.04);
 }
 
 .nav-links a.router-link-active {
@@ -133,7 +223,7 @@ body {
 
 .nav-btn {
   display: inline-block;
-  padding: 0.5rem 1.5rem;
+  padding: 0.5rem;
   text-decoration: none;
 
   font-weight: 500;

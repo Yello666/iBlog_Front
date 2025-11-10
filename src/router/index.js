@@ -31,11 +31,18 @@ const routes = [//定义路由规则（routes 数组）
         component: () => import('../views/ArticleDetail.vue')
     },
     {
+        path:'/articles/user/:uid',
+        name:'MyArticles',
+        component:() => import('../views/MyArticles.vue'),
+        meta: { requiresAuth: true}
+    },
+    {
         path: '/article',//这个要放在后面，因为这个路由也可以匹配/article/123
         name: 'ArticleEdit',
         component: () => import('../views/ArticleEdit.vue'),
         meta: { requiresAuth: true }// 元信息：需登录才能访问
     },
+
 
     // {
     //     path: '/article',
