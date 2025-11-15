@@ -120,6 +120,8 @@ const loadComments = async () => {
     console.log(response)
     comments.value = response.data.records.map(comment => ({
       ...comment,
+      isLiked: comment.liked,
+      likeCount: comment.likesCount,
       showReplyInput: false,
       replyContents: ''
     }))
@@ -154,14 +156,9 @@ const likeComment = async (cid) => {
   try {
     const comment = comments.value.find(c => c.cid === cid)
     if (!comment) return
-    if (comment.isLiked) {
-      await commentAPI.unlikeComment(cid)
-      comment.likeCount--
-    } else {
-      await commentAPI.likeComment(cid)
-      comment.likeCount++
-    }
-    comment.isLiked = !comment.isLiked
+    const response=await commentAPI.likeComment(cid)
+    comment.isLiked = response.data.status
+    comment.likeCount=response.data.crtLikes
   } catch (error) {
     console.error('评论点赞失败:', error)
   }
@@ -210,9 +207,12 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* ✅ 你的原样式保持不变 */
 .comment-section {
   margin-top: 3rem;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 1rem;
 }
 
 .comment-section h3 {
@@ -220,44 +220,39 @@ onMounted(() => {
   margin-bottom: 1.5rem;
   padding-bottom: 0.5rem;
   border-bottom: 2px solid #ecf0f1;
+  font-size: 1.5rem;
 }
 
 .comment-input textarea {
   width: 100%;
   padding: 0.8rem;
   border: 1px solid #ddd;
-  border-radius: 4px;
+  border-radius: 6px;
   resize: vertical;
   margin-bottom: 0.8rem;
   font-family: inherit;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.comment-input textarea:focus {
+  outline: none;
+  border-color: #3498db;
 }
 
 .comment-input button {
   background-color: #3498db;
   color: white;
   border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
   cursor: pointer;
   transition: background-color 0.2s;
+  font-size: 1rem;
 }
 
 .comment-input button:hover {
   background-color: #2980b9;
-}
-
-.login-prompt {
-  padding: 1rem;
-  color: #7f8c8d;
-  text-align: center;
-  border: 1px dashed #ddd;
-  border-radius: 4px;
-  margin-bottom: 1.5rem;
-}
-
-.login-prompt a {
-  color: #3498db;
-  text-decoration: none;
 }
 
 .comments-list {
@@ -265,27 +260,180 @@ onMounted(() => {
 }
 
 .comment-item {
-  padding: 1rem 0;
+  padding: 1.5rem 0;
   border-bottom: 1px solid #f5f5f5;
 }
 
 .comment-header {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.8rem;
 }
 
 .comment-author {
   font-weight: bold;
   color: #2c3e50;
+  font-size: 1.1rem;
 }
 
 .comment-time {
   color: #7f8c8d;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
 }
 
 .comment-content {
-  margin-bottom: auto;
+  margin-bottom: 1rem;
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+/* 点赞和回复按钮样式优化 */
+.comment-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem; /* 拉开点赞和回复按钮的间距 */
+  margin-top: 0.5rem;
+}
+
+.like-btn, .reply-btn {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 1.1rem; /* 调大字体 */
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: all 0.2s;
+  padding: 0.3rem 0.5rem;
+}
+
+.like-btn {
+  color: #e74c3c;
+}
+
+.like-btn.liked {
+  color: #e74c3c;
+  transform: scale(1.05);
+}
+
+.reply-btn {
+  color: #333;
+}
+
+.reply-btn:hover {
+  color: #3498db; /* 回复按钮hover变蓝 */
+}
+
+/* 回复输入框样式 */
+.reply-input {
+  margin-top: 1rem;
+  margin-left: 0;
+  width: 100%;
+}
+
+.reply-input textarea {
+  width: 100%;
+  padding: 0.7rem;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  resize: vertical;
+  font-family: inherit;
+  font-size: 1rem;
+  margin-bottom: 0.7rem;
+}
+
+.reply-buttons {
+  display: flex;
+  gap: 0.8rem;
+}
+
+.reply-buttons button {
+  padding: 0.4rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background-color 0.2s;
+}
+
+.reply-buttons button:first-child {
+  background-color: #3498db;
+  color: white;
+  border: none;
+}
+
+.reply-buttons button:first-child:hover {
+  background-color: #2980b9;
+}
+
+.reply-buttons button:last-child {
+  background-color: #f5f5f5;
+  color: #333;
+  border: none;
+}
+
+.reply-buttons button:last-child:hover {
+  background-color: #e0e0e0;
+}
+
+/* 回复列表样式 */
+.replies {
+  margin-top: 1rem;
+  padding-left: 0;
+}
+
+.reply-item {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.8rem;
+  font-size: 1rem;
+}
+
+.reply-author {
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.reply-content {
+  color: #333;
+}
+
+.reply-time {
+  color: #7f8c8d;
+  font-size: 0.9rem;
+  margin-left: auto;
+}
+
+/* 分页样式 */
+.pagination {
+  margin-top: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.pagination button {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  background-color: white;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.pagination button:hover:not(:disabled) {
+  background-color: #f5f5f5;
+  border-color: #ccc;
+}
+
+.pagination button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pagination span {
+  color: #333;
+  font-size: 1rem;
 }
 </style>

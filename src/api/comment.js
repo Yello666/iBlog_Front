@@ -60,11 +60,11 @@ export const commentAPI = {
         return response.data
     },
 
-    // 取消点赞评论
-    async unlikeComment(cid) {
-        const response=await api.post('/comments/unlike', null, {
-            params: { cid }
-        })
-        return response.data
-    }
+    // // 取消点赞评论
+    // async unlikeComment(cid) {
+    //     const response=await api.post('/comments/unlike', null, {
+    //         params: { cid }
+    //     })
+    //     return response.data
+    // }
 }

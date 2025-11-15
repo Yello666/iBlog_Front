@@ -57,34 +57,34 @@ export const articleAPI = {
     },
 
     // 点赞文章
-    async likeArticle(aid, uid) {
+    async likeArticle(aid) {
         const response=await api.post('/article/like', null, {
-            params: { aid, uid }
+            params: { aid}
         })
         return response.data
     },
 
-    // 取消点赞
-    async undoLikeArticle(aid, uid) {
-        const response=await api.post('/article/undoLike', null, {
-            params: { aid, uid }
-        })
-        return response.data
-    },
+    // // 取消点赞
+    // async undoLikeArticle(aid, uid) {
+    //     const response=await api.post('/article/undoLike', null, {
+    //         params: { aid, uid }
+    //     })
+    //     return response.data
+    // },
 
     // 收藏文章
-    async favorArticle(aid, uid) {
+    async favorArticle(aid) {
         const response=await api.post('/article/favor', null, {
-            params: { aid, uid }
+            params: { aid}
         })
         return response.data
     },
 
-    // 取消收藏
-    async undoFavorArticle(aid, uid) {
-        const response=await api.post('/article/undoFavor', null, {
-            params: { aid, uid }
-        })
-        return response.data
-    }
+    // // 取消收藏
+    // async undoFavorArticle(aid, uid) {
+    //     const response=await api.post('/article/undoFavor', null, {
+    //         params: { aid, uid }
+    //     })
+    //     return response.data
+    // }
 }

@@ -89,34 +89,38 @@ export default {
 
 
       try {
-        if (article.value.isLiked) {
-          await articleAPI.undoLikeArticle(article.value.aid, Number(currentUid.value))
-          article.value.likesCount--
-        } else {
-          await articleAPI.likeArticle(article.value.aid, Number(currentUid.value))
-          article.value.likesCount++
-        }
-        article.value.isLiked = !article.value.isLiked
+        // if (article.value.isLiked) {
+        //   article.value.likesCount--
+        // } else {
+        //   article.value.likesCount++
+        // }
+        // article.value.isLiked = !article.value.isLiked
+        const response=await articleAPI.likeArticle(article.value.aid)
+        article.value.isLiked=response.data.status
+        article.value.likesCount=response.data.crtLikes
+        console.log("isLiked:",article.value.isLiked)
       } catch (error) {
         console.error('点赞失败:', error)
       }
     }
 
-    // 处理收藏（去掉类型声明）
+    // 处理收藏
     const handleFavorite = async () => {
       if (!article.value || !currentUid.value) {
         alert("请先登陆哟～～～")
         return
       }
       try {
-        if (article.value.isFavored) {
-          await articleAPI.undoFavorArticle(article.value.aid, Number(currentUid.value))
-          article.value.favorCount--
-        } else {
-          await articleAPI.favorArticle(article.value.aid, Number(currentUid.value))
-          article.value.favorCount++
-        }
-        article.value.isFavored = !article.value.isFavored
+        // if (article.value.isFavored) {
+        //   article.value.favorCount--
+        // } else {
+        //   article.value.favorCount++
+        // }
+        // article.value.isFavored = !article.value.isFavored
+        const response=await articleAPI.favorArticle(article.value.aid)
+        article.value.isFavored=response.data.status
+        article.value.favorCount=response.data.crtFavors
+
       } catch (error) {
         console.error('收藏失败:', error)
       }
@@ -132,7 +136,7 @@ export default {
         console.log("aid:",aid)
 
         loading.value = true
-        const response = await articleAPI.getArticle(Number(aid),Number(currentUid.value))
+        const response = await articleAPI.getArticle(aid,currentUid.value)
         article.value = response.data
         console.log(article.value)
         article.value.isLiked = response.data.liked
