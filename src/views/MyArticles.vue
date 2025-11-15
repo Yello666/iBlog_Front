@@ -2,13 +2,20 @@
   <div class="my-articles-container">
     <!-- 页面标题 -->
     <div class="page-header">
+      <!-- 返回根目录按钮 -->
       <h2>我的文章列表</h2>
+      <div class="back-button" @click="$router.push('/')">
+        <span class="arrow-right"></span>
+        <span class="back-text">返回</span>
+      </div>
     </div>
 
     <!-- 文章列表 -->
     <div class="articles-list">
       <div v-for="article in articleList" :key="article.aid" class="article-card">
-        <div class="article-title">{{ article.title }}</div>
+        <router-link :to="`/article/${article.aid}`" class="article-title-link">
+          <div class="article-title">{{ article.title }}</div>
+        </router-link>
         <div class="article-meta">
           <span>发布时间：{{ formatTime(article.createdAt) }}</span>
           <span>更新时间：{{ formatTime(article.updatedAt) }}</span>
@@ -24,8 +31,8 @@
           <span class="stat-item">💬 评论 {{ article.commentsCount }}</span>
         </div>
         <div class="article-actions">
-          <button class="btn edit-btn">编辑</button>
-          <button class="btn delete-btn">删除</button>
+          <button class="btn edit-btn" @click="handleEdit(article.aid)">编辑</button>
+          <button class="btn delete-btn" @click="handleDelete(article.aid)">删除</button>
         </div>
       </div>
     </div>
@@ -125,6 +132,31 @@ export default {
     // 跳转到发布文章页面（需自行创建发布页面）
     goToPublish() {
       this.$router.push('/article/publish')
+    },
+    // 编辑文章逻辑
+    handleEdit(aid) {
+      // 跳转到编辑页面并携带文章ID参数
+      this.$router.push(`/article?aid=${aid}`)
+    },
+
+    // 删除文章逻辑
+    async handleDelete(aid) {
+      // 显示确认弹窗
+      if (!confirm('确定要删除这篇文章吗？此操作不可撤销！')) {
+        return
+      }
+
+      try {
+        // 调用删除接口（传入文章ID和用户ID）
+        await articleAPI.deleteArticle(aid, this.uid)
+
+        // 删除成功后刷新列表（从当前列表中移除该文章）
+        this.articleList = this.articleList.filter(article => article.aid !== aid)
+        alert('文章删除成功')
+      } catch (error) {
+        console.error('删除文章失败：', error)
+        alert('删除失败，请重试')
+      }
     }
   }
 }
@@ -135,13 +167,60 @@ export default {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
+  position: relative;
 }
 
 .page-header {
   margin-bottom: 30px;
   border-bottom: 1px solid #eee;
   padding-bottom: 10px;
+  display: flex; /* 使用flex布局 */
+  justify-content: space-between; /* 标题左对齐，按钮右对齐 */
+  align-items: center; /* 垂直居中 */
 }
+
+/* 返回按钮样式 */
+.back-button {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  color: #34495e;
+  font-size: 1rem;
+  transition: color 0.3s ease;
+}
+
+
+.back-button:hover {
+  color: #5588f4;
+}
+
+.arrow-right {
+  width: 0;
+  height: 0;
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+  border-right: 10px solid currentColor;
+  margin-right: 10px;
+
+}
+
+.back-text {
+  opacity: 0;
+  transform: translateX(-5px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  white-space: nowrap;
+}
+
+.back-button:hover .arrow-right {
+  transform: translateX(-3px);
+  transition: transform 0.3s ease;
+}
+
+.back-button:hover .back-text {
+  opacity: 1;
+  transform: translateX(0);
+}
+
 
 .articles-list {
   display: grid;
@@ -160,11 +239,21 @@ export default {
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
+
+/* 文章标题链接样式（保留原标题样式，添加链接交互） */
+.article-title-link {
+  text-decoration: none;
+}
+
 .article-title {
   font-size: 18px;
   font-weight: 600;
   margin-bottom: 10px;
   color: #333;
+}
+
+.article-title-link:hover .article-title {
+  color: #5588f4; /*  hover 时变色，与返回按钮一致 */
 }
 
 .article-meta {

@@ -57,7 +57,8 @@ export default {
 
     // 状态变量
     const isSubmitting = ref(false)
-    const isEditMode = ref(!!route.params.aid) // 通过路由参数判断是否为编辑模式
+    // const isEditMode = ref(!!route.params.aid) // 通过路由参数判断是否为编辑模式
+    const isEditMode = ref(!!route.query.aid) // 改为查询参数
     const article = ref({
       uid: store.state.user?.uid || '', // 从Vuex获取当前用户ID
       title: '',
@@ -68,15 +69,15 @@ export default {
     onMounted(async () => {
       if (isEditMode.value) {
         try {
-          const aid = route.params.aid
+          const aid = route.query.aid
           const uid = store.state.user?.uid
-          const data = await articleAPI.getArticle(aid, uid)//原来的文章
+          const response = await articleAPI.getArticle(aid, uid)//原来的文章
 
           // 填充文章数据
           article.value = {
             uid: uid,
-            title: data.title,
-            content: data.content
+            title: response.data.title,
+            content: response.data.content
           }
         } catch (error) {
           console.error('加载文章失败:', error)
