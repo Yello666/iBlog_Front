@@ -99,19 +99,20 @@
 ```
 ├── src
 │   ├── api              # 接口封装（axios）
-│   ├── components       # 部分组件（文章列表、评论列表）
+│   ├── components       # 部分组件（返回文章列表、返回评论列表）
 │   ├── router           # 路由配置
 │   ├── store            # Vuex状态管理（用户信息、Token 等）
-│   ├── views            # 主要组件（文章界面、登陆注册界面等）
+│   ├── views            # 主要组件（Home页面、文章详情界面、编辑文章与发布文章页面、登陆与注册界面、个人信息页面、个人文章列表页面）
+│   ├── App.vue          # 网站永远显示的根目录页面（导航栏等）
 │   └── main.js          # 项目入口文件
-├── index.html
 ├── package.json
+├── vercel.json          #vercel重定向
 └── vite.config.js
 ```
 
 ---
 
-## 📄 项目功能预览（说明用）
+## 📄 项目功能预览
 
 * 登录后可查看个人文章
 * 文本编辑器发布文章
@@ -121,17 +122,7 @@
 
 ---
 
-如果你需要，我还可以帮你：
-
-✅ 生成适合 GitHub README 的美化版
-✅ 优化内容排版，让你的简历更专业
-✅ 补充前端技术亮点或难点描述，让面试官更容易留下印象
-✅ 帮你写“项目负责的部分”“核心贡献”等内容
-
-需要我继续扩展吗？
 ## Project Setup
-
-----
 
 ```sh
 npm install
@@ -142,5 +133,3 @@ npm install
 ```sh
 npm run dev
 ```
-
-### Compile and Minify for Production
