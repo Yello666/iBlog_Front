@@ -1,25 +1,137 @@
-# iblog
+# iBlog 前端服务说明文档
 
-This template should help get you started developing with Vue 3 in Vite.
+本项目是一个前后端分离的个人博客系统 —— **iBlog** 的前端部分，基于 **Vue 3 + Vite** 开发，并部署在 **Vercel** 上实现公网访问。主要实现用户登录、文章浏览、文章发布、评论互动、点赞收藏等页面展示和交互逻辑，为后端提供的 API 提供一个清晰、美观、可用的前端界面。
 
-## Recommended IDE Setup
+* **项目公网访问地址**：[https://www.yellow-iblog.cn](https://www.yellow-iblog.cn)
+* **后端项目 GitHub 仓库**：[https://github.com/Yello666/iBlog](https://github.com/Yello666/iBlog)
+* **后端 Spring Boot 项目**：已独立部署在阿里云 ECS 上并提供完整 API
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+---
 
-## Recommended Browser Setup
+## 🚀 项目简介
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd) 
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+**iBlog 前端服务**作为博客系统的用户界面层，负责页面渲染、用户操作交互、请求后端 API、状态展示等功能。通过 Vite 进行构建和热更新，提供快速高效的开发体验。
 
-## Customize configuration
+前端实现了用户系统、文章系统、评论系统和点赞收藏系统的所有展示能力。
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+---
 
+## ✨ 前端主要功能
+
+### 👤 用户模块
+
+* 用户注册
+* 用户登录（本地存储 Token）
+* 登出
+* 修改个人资料
+* 修改密码
+
+登录成功后，前端自动携带 Token 请求受保护接口，并根据登录状态渲染不同的导航栏内容。
+
+---
+
+### 📝 文章模块
+
+* 查看文章列表
+* 热门文章（按点赞量 TOP 5）
+* 查看文章详情（展示作者、时间、内容、点赞数、收藏状态）
+* 发布文章（登录后使用）
+* 修改文章（仅作者可操作）
+* 删除文章（仅作者可操作）
+* 查看当前登录用户的文章列表
+
+文章详情请求带有 Redis 缓存支持的后端接口，因此访问速度快。
+
+---
+
+### 💬 评论模块
+
+* 查看文章下的评论列表（Redis 缓存）
+* 发表评论
+* 点赞评论（前端按钮 + 状态同步）
+
+评论区采用响应式渲染，用户提交评论后页面自动更新。
+
+---
+
+### 👍 点赞与收藏模块
+
+* 点赞文章 / 取消点赞
+* 收藏文章 / 取消收藏
+* 点赞评论
+
+前端会根据后端返回的用户点赞状态、文章点赞数实时更新 UI，保证显示的正确性。
+
+---
+
+## 🧱 前端技术栈
+
+* **框架**：Vue 3（Composition API）
+* **构建工具**：Vite
+* **路由管理**：Vue Router
+* **状态管理**：Vuex（集中管理 Token、登录状态、用户信息）
+* **UI 设计**：原生 HTML + CSS + Vue 自定义样式
+* **网络请求**：Axios（自动携带 Token、统一请求拦截）
+* **部署方式**：Vercel 部署（自动 CI/CD与可公网访问）
+
+---
+
+## 🌐 部署情况
+
+前端已通过 **Vercel** 一键部署，更新代码自动触发构建与发布。
+结合后端的阿里云 ECS 服务，实现完整可公网访问的博客站点。
+
+---
+
+## 📌 项目亮点
+
+* **基于 Vue 3 + Vite 的前端工程化项目**
+* 支持登录状态管理、鉴权路由跳转
+* 全量博客基础功能（文章/评论/点赞/收藏）
+* 热门文章展示 + Redis 缓存文章详情
+* 代码结构清晰，组件化良好，便于扩展
+* 完全前后端分离，部署独立，支持未来替换后端或增加新客户端
+
+---
+
+## 📁 项目结构
+
+```
+├── src
+│   ├── api              # 接口封装（axios）
+│   ├── components       # 部分组件（文章列表、评论列表）
+│   ├── router           # 路由配置
+│   ├── store            # Vuex状态管理（用户信息、Token 等）
+│   ├── views            # 主要组件（文章界面、登陆注册界面等）
+│   └── main.js          # 项目入口文件
+├── index.html
+├── package.json
+└── vite.config.js
+```
+
+---
+
+## 📄 项目功能预览（说明用）
+
+* 登录后可查看个人文章
+* 文本编辑器发布文章
+* 文章自动排序/展示
+* 点赞、收藏、评论完整闭环
+* 页面风格简洁，适合博客展示用途
+
+---
+
+如果你需要，我还可以帮你：
+
+✅ 生成适合 GitHub README 的美化版
+✅ 优化内容排版，让你的简历更专业
+✅ 补充前端技术亮点或难点描述，让面试官更容易留下印象
+✅ 帮你写“项目负责的部分”“核心贡献”等内容
+
+需要我继续扩展吗？
 ## Project Setup
+
+----
 
 ```sh
 npm install
@@ -32,7 +144,3 @@ npm run dev
 ```
 
 ### Compile and Minify for Production
-
-```sh
-npm run build
-```
