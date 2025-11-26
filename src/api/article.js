@@ -15,6 +15,15 @@ export const articleAPI = {
         })
         return response.data
     },
+    //获取最新文章
+    async getLatestArticles(num){
+        //在这里提前做response的解析，在vue组件用到函数的时候，就不用把response.data作为响应体了
+        const response= await api.get('/article/new',{
+            //获取文章的个数
+            params:{num}
+        })
+        return response.data
+    },
     // 获取文章详情
     async getArticle(aid,uid) {
         const response= await api.get(`/article/${aid}`,{

@@ -9,16 +9,23 @@
       <h2>推荐文章</h2>
       <ArticleList />
     </div>
+
+    <div class="articles-section">
+      <h2>最新文章</h2>
+      <LatestArticleList />
+    </div>
   </div>
 </template>
 
 <script>
 import ArticleList from '../components/ArticleList.vue'
+import LatestArticleList from '../components/LatestArticleList.vue'
 
 export default {
   name: 'Home',
   components: {
-    ArticleList
+    ArticleList,
+    LatestArticleList
   }
 }
 </script>
