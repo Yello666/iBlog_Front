@@ -1,0 +1,16 @@
+{
+  "routes": [
+    { "src": "/((?!api).*)", "dest": "/index.html" },
+    {
+      "src": "/api/(.*)",
+      "dest": "https://yellow-iblog.cn/$1",
+      "headers": {
+        "Access-Control-Allow-Origin": "https://www.yellow-iblog.cn",
+        "Access-Control-Allow-Credentials": "true"
+      }
+    }
+  ],
+  "redirects": [
+    { "source": "http://www.yellow-iblog.cn/(.*)", "destination": "https://www.yellow-iblog.cn/$1", "permanent": true }
+  ]
+}
