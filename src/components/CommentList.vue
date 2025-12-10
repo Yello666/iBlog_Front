@@ -91,8 +91,8 @@ const props = defineProps({
   }
 })
 
-console.log('评论区接收的 props.currentUid 值:', props.currentUid)
-console.log('评论区接收的 props.aid 值:', props.aid)
+// console.log('评论区接收的 props.currentUid 值:', props.currentUid)
+// console.log('评论区接收的 props.aid 值:', props.aid)
 
 // 状态管理
 const comments = ref([])
@@ -111,13 +111,13 @@ const formatDate = (dateString) => {
 // 加载评论
 const loadComments = async () => {
   try {
-    console.log("加载评论。。。")
+    // console.log("加载评论。。。")
     const response = await commentAPI.getArticleComments(
         Number(props.aid),
         currentPage.value,
         pageSize.value
     )
-    console.log(response)
+    // console.log(response)
     comments.value = response.data.records.map(comment => ({
       ...comment,
       isLiked: comment.liked,

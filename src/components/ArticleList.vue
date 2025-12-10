@@ -118,7 +118,7 @@ export default {
     async getAuthorMap(uids){
       const authorMap = {}
       for (const uid of uids) {
-        console.log(uid)
+        // console.log(uid)
         try {
           // 调用用户 API 获取单个用户信息
           const response = await userAPI.getUser(uid)
