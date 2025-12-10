@@ -78,9 +78,10 @@ router.beforeEach((to, from, next) => {
     // 获取当前用户状态：是否登录、是否为管理员
     const isAuthenticated = store.state.isAuthenticated
     const isAdmin = store.getters.isAdmin
-
+    console.log('isAuthenticated=', isAuthenticated)
+    console.log('访问路径=', to.path)
     if (to.meta.requiresAuth && !isAuthenticated) {
-        // 目标页需要登录，但用户未登录 → 跳转到登录页
+        // 目标页需要登录，但用户未登录
         next('/login')
     } else if (to.meta.requiresGuest && isAuthenticated) {
         // 目标页仅游客可访问，但用户已登录 → 跳转到首页
