@@ -1,6 +1,8 @@
 import axios from 'axios'
 
-const API_BASE = '/api'
+// const API_BASE = '/api' 本地开发
+const API_BASE='https://yellow-iblog.cn' //生产环境
+
 
 const api = axios.create({
     baseURL: API_BASE,

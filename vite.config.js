@@ -18,12 +18,12 @@ export default defineConfig({
   },
 //例如import MyComp from '@/components/MyComp.vue'可以等价为import MyComp from '/src/components/MyComp.vue'
 
-    //本地开发服务器代理（server.proxy），使用这个会让Vite 本地服务器代为转发，不是浏览器发，
+    //本地开发服务器代理（server.proxy），使用这个会让Vite 本地服务器代为转发，不是浏览器发，这个只在本地运行时有效，在云上运行时无效。
     // 浏览器默认禁止从 5173 向 8080 发请求（跨域）....
     server: {
         proxy: {
             '/api': {//会匹配开头带有/api的请求
-                target: 'http://8.155.144.213:8080',//转发到这个地址
+                target: 'https://yellow-iblog.cn',//转发到这个地址
                 //target: 'http://localhost:8080',//转发到这个地址
                 changeOrigin: true,//将http请求头的origin字段改成后端服务器的地址，"骗过"服务器的跨域检查。
                 //因为原本后端服务器会拒绝跨域访问（防止CSRF攻击）
