@@ -10,6 +10,12 @@
         "Access-Control-Allow-Headers": "Content-Type, Authorization"
       }
     },
-    { "src": "/(.*)", "dest": "/index.html" }
+    {
+      "src": "/((?!\\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$).*)",
+      "dest": "/index.html"
+    }
+  ],
+  "redirects": [
+    { "source": "http://www.yellow-iblog.cn/(.*)", "destination": "https://www.yellow-iblog.cn/$1", "permanent": true }
   ]
 }
