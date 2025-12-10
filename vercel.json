@@ -1,6 +1,5 @@
 {
   "routes": [
-    { "src": "/((?!api/|assets/|static/|favicon.ico).*)", "dest": "/index.html" },
     {
       "src": "/api/(.*)",
       "dest": "https://yellow-iblog.cn/$1",
@@ -10,7 +9,8 @@
         "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type, Authorization"
       }
-    }
+    },
+    { "src": "/(.*)", "dest": "/index.html" }
   ],
   "redirects": [
     { "source": "http://www.yellow-iblog.cn/(.*)", "destination": "https://www.yellow-iblog.cn/$1", "permanent": true }
