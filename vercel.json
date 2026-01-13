@@ -8,5 +8,6 @@
       "source": "/(.*)",
       "destination": "/"
     }
-  ]
+  ],
+  "regions": ["sgp1"]
 }
