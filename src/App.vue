@@ -4,6 +4,7 @@
 <template>
 <!--  <div id="app">整个应用的最外层容器，通过id="app"标识（通常与入口文件中的挂载点对应）-->
   <div id="app">
+    <SpeedInsights />
     <!--      <nav></nav>是导航栏，是固定语法-->
     <nav class="navbar">
       <div class="nav-brand"> <!--nav-brand是网站logo -->
@@ -52,10 +53,14 @@
 <!--<script> 标签内的代码用于定义组件的逻辑部分-->
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex'
+import { SpeedInsights } from '@vercel/speed-insights/vue'
 
 //导出了APP，会在main.js里面被引用
 export default {
   name: 'iBLOG',// 组件名称（调试和开发工具中显示）,在main.js中引入，用于创建vue项目
+  components: {
+    SpeedInsights
+  },
   // 通过 Vuex 获取全局状态（登录状态、用户信息等），在store/index.js里面
   computed: {
     ...mapState(['user']),//在state中获取
