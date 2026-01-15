@@ -103,7 +103,7 @@ export default {
       try {
         if (isEditMode.value) {
           // 更新文章
-          await articleAPI.updateArticle(route.params.aid, article.value)
+          await articleAPI.updateArticle(route.query.aid, article.value)
           alert('文章更新成功')
         } else {
           // 创建新文章
