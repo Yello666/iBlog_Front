@@ -36,6 +36,13 @@
 import { articleAPI } from '../api/article'
 import {userAPI} from "@/api/user.js";
 import ArticleSkeleton from './ArticleSkeleton.vue';
+import MarkdownIt from 'markdown-it'
+
+const md = new MarkdownIt({
+  html: false,
+  linkify: true,
+  breaks: true
+})
 
 export default {
   name: 'LatestArticleList',
@@ -58,104 +65,10 @@ export default {
     await this.loadArticles()
   },
   methods: {
-    escapeHtml(str) {
-      if (!str) return ''
-      return str
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-    },
-    markdownToHtml(markdown) {
-      if (!markdown) return ''
-      const lines = markdown.split(/\r?\n/)
-      let html = ''
-      let inCodeBlock = false
-      let inOl = false
-      let inUl = false
-
-      const closeLists = () => {
-        if (inOl) {
-          html += '</ol>'
-          inOl = false
-        }
-        if (inUl) {
-          html += '</ul>'
-          inUl = false
-        }
-      }
-
-      for (let i = 0; i < lines.length; i++) {
-        const rawLine = lines[i]
-        const line = rawLine.trimEnd()
-        const trimmed = line.trim()
-
-        if (trimmed === '```') {
-          if (!inCodeBlock) {
-            closeLists()
-            inCodeBlock = true
-            html += '<pre><code>'
-          } else {
-            inCodeBlock = false
-            html += '</code></pre>'
-          }
-          continue
-        }
-
-        if (inCodeBlock) {
-          html += this.escapeHtml(rawLine) + '\n'
-          continue
-        }
-
-        if (!trimmed) {
-          closeLists()
-          continue
-        }
-
-        const headingMatch = trimmed.match(/^(#{1,6})\s+(.*)$/)
-        if (headingMatch) {
-          closeLists()
-          const level = headingMatch[1].length
-          const text = headingMatch[2]
-          html += `<h${level}>${this.escapeHtml(text)}</h${level}>`
-          continue
-        }
-
-        const olMatch = trimmed.match(/^(\d+)\.\s+(.*)$/)
-        if (olMatch) {
-          if (!inOl) {
-            closeLists()
-            inOl = true
-            html += '<ol>'
-          }
-          html += `<li>${this.escapeHtml(olMatch[2])}</li>`
-          continue
-        }
-
-        const ulMatch = trimmed.match(/^[-*+]\s+(.*)$/)
-        if (ulMatch) {
-          if (!inUl) {
-            closeLists()
-            inUl = true
-            html += '<ul>'
-          }
-          html += `<li>${this.escapeHtml(ulMatch[1])}</li>`
-          continue
-        }
-
-        closeLists()
-        html += `<p>${this.escapeHtml(trimmed)}</p>`
-      }
-
-      closeLists()
-      if (inCodeBlock) {
-        html += '</code></pre>'
-      }
-      return html
-    },
     renderSummary(content) {
       if (!content) return ''
       const snippet = content.substring(0, 400)
-      return this.markdownToHtml(snippet)
+      return md.render(snippet)
     },
     async loadArticles() {
       this.error = ''
@@ -251,6 +164,8 @@ export default {
   margin-bottom: 1rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s;
+  display: flex;
+  flex-direction: column;
 }
 
 .article-card:hover {
@@ -280,6 +195,16 @@ export default {
   color: #34495e;
   line-height: 1.6;
   margin-bottom: 1rem;
+  max-height: 100px;
+  overflow: hidden;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.article-content pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .article-tags {

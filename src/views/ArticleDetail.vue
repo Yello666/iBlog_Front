@@ -54,12 +54,18 @@
 </template>
 
 <script>
-// 引入 Vue 核心API和路由、接口
 import {ref, onMounted, computed} from 'vue'
 import { useRoute } from 'vue-router'
 import { articleAPI } from '@/api/article'
 import CommentSection from '../components/CommentList.vue'
 import {useStore} from "vuex";
+import MarkdownIt from 'markdown-it'
+
+const md = new MarkdownIt({
+  html: false,
+  linkify: true,
+  breaks: true
+})
 
 export default {
   components: { CommentSection }, // 注册评论区组件
@@ -71,108 +77,12 @@ export default {
     const route = useRoute()
     const store = useStore()
     const currentUser = computed(() => store.getters.currentUser)
-    const currentUid = computed(() => currentUser.value?.uid) //currentUser.value存在的话，就获取其uid
+    const currentUid = computed(() => currentUser.value?.uid)
     console.log("uid:{}",currentUid.value)
     console.log("uid type:",typeof currentUid.value)
-
-    const escapeHtml = (str) => {
-      return str
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-    }
-
-    const markdownToHtml = (markdown) => {
-      if (!markdown) return ''
-      const lines = markdown.split(/\r?\n/)
-      let html = ''
-      let inCodeBlock = false
-      let inOl = false
-      let inUl = false
-
-      const closeLists = () => {
-        if (inOl) {
-          html += '</ol>'
-          inOl = false
-        }
-        if (inUl) {
-          html += '</ul>'
-          inUl = false
-        }
-      }
-
-      for (let i = 0; i < lines.length; i++) {
-        const rawLine = lines[i]
-        const line = rawLine.trimEnd()
-        const trimmed = line.trim()
-
-        if (trimmed === '```') {
-          if (!inCodeBlock) {
-            closeLists()
-            inCodeBlock = true
-            html += '<pre><code>'
-          } else {
-            inCodeBlock = false
-            html += '</code></pre>'
-          }
-          continue
-        }
-
-        if (inCodeBlock) {
-          html += escapeHtml(rawLine) + '\n'
-          continue
-        }
-
-        if (!trimmed) {
-          closeLists()
-          continue
-        }
-
-        const headingMatch = trimmed.match(/^(#{1,6})\s+(.*)$/)
-        if (headingMatch) {
-          closeLists()
-          const level = headingMatch[1].length
-          const text = headingMatch[2]
-          html += `<h${level}>${escapeHtml(text)}</h${level}>`
-          continue
-        }
-
-        const olMatch = trimmed.match(/^(\d+)\.\s+(.*)$/)
-        if (olMatch) {
-          if (!inOl) {
-            closeLists()
-            inOl = true
-            html += '<ol>'
-          }
-          html += `<li>${escapeHtml(olMatch[2])}</li>`
-          continue
-        }
-
-        const ulMatch = trimmed.match(/^[-*+]\s+(.*)$/)
-        if (ulMatch) {
-          if (!inUl) {
-            closeLists()
-            inUl = true
-            html += '<ul>'
-          }
-          html += `<li>${escapeHtml(ulMatch[1])}</li>`
-          continue
-        }
-
-        closeLists()
-        html += `<p>${escapeHtml(trimmed)}</p>`
-      }
-
-      closeLists()
-      if (inCodeBlock) {
-        html += '</code></pre>'
-      }
-      return html
-    }
-
     const renderedContent = computed(() => {
       if (!article.value || !article.value.content) return ''
-      return markdownToHtml(article.value.content)
+      return md.render(article.value.content)
     })
     // 格式化日期（去掉参数类型）
     const formatDate = (dateString) => {
@@ -277,7 +187,7 @@ export default {
 <style scoped>
 /* 样式部分完全不变，保留原逻辑 */
 .article-detail {
-  max-width: 800px;
+  max-width: 1000px;
   margin: 2rem auto;
   padding: 0 1rem;
 }
@@ -315,6 +225,21 @@ export default {
   color: #34495e;
   margin-bottom: 2rem;
   min-height: 300px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.article-body pre {
+  overflow-x: auto;
+  padding: 1rem;
+  background: #f5f5f5;
+  border-radius: 4px;
+  white-space: pre;
+}
+
+.article-body code {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .article-actions {
