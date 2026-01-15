@@ -5,48 +5,65 @@
     <div v-if="loading" class="loading">加载中...</div>
 
     <!-- 文章内容 -->
-    <div v-else-if="article" class="article-content">
-      <!-- 返回首页按钮 -->
-      <div class="back-button" @click="$router.push('/')">
-        <span class="arrow-left"></span>
-        <span class="back-text">返回</span>
+    <div v-else-if="article" class="detail-container">
+      <!-- 侧边栏目录 -->
+      <aside class="sidebar" v-if="toc.length > 0">
+        <div class="toc-content">
+          <h3>目录</h3>
+          <ul class="toc-list">
+            <li v-for="item in toc" 
+                :key="item.id" 
+                :class="['toc-item', `toc-level-${item.level}`]"
+                @click="scrollToHeading(item.id)">
+              {{ item.title }}
+            </li>
+          </ul>
+        </div>
+      </aside>
+
+      <div class="article-content">
+        <!-- 返回首页按钮 -->
+        <div class="back-button" @click="$router.push('/')">
+          <span class="arrow-left"></span>
+          <span class="back-text">返回</span>
+        </div>
+        <h1>{{ article.title }}</h1>
+
+        <div class="article-meta">
+          <span>创作时间: {{ formatDate(article.createdAt) }}</span>
+          <span>修改时间: {{ formatDate(article.updatedAt) }}</span>
+        </div>
+
+        <div class="article-body" v-html="renderedHtml"></div>
+
+        <!-- 点赞收藏区域（左下角） -->
+        <div class="article-actions">
+          <button
+              class="action-btn"
+              @click="handleLike"
+              :class="{ liked: article.isLiked }"
+          >
+            <i class="like-icon">{{ article.isLiked ? '❤️' : '♡' }}</i>
+            <span>{{ article.likesCount || 0 }}</span>
+          </button>
+
+          <button
+              class="action-btn"
+              @click="handleFavorite"
+              :class="{ favored: article.isFavored }"
+          >
+            <i class="favor-icon">{{ article.isFavored ? '★' : '☆' }}</i>
+            <span>{{ article.favorCount || 0 }}</span>
+          </button>
+        </div>
+
+        <!-- 评论区组件 -->
+        <CommentSection
+            v-if="currentUid"
+            :aid="article.aid"
+            :current-uid="currentUid"
+        />
       </div>
-      <h1>{{ article.title }}</h1>
-
-      <div class="article-meta">
-        <span>创作时间: {{ formatDate(article.createdAt) }}</span>
-        <span>修改时间: {{ formatDate(article.updatedAt) }}</span>
-      </div>
-
-      <div class="article-body" v-html="renderedContent"></div>
-
-      <!-- 点赞收藏区域（左下角） -->
-      <div class="article-actions">
-        <button
-            class="action-btn"
-            @click="handleLike"
-            :class="{ liked: article.isLiked }"
-        >
-          <i class="like-icon">{{ article.isLiked ? '❤️' : '♡' }}</i>
-          <span>{{ article.likesCount || 0 }}</span>
-        </button>
-
-        <button
-            class="action-btn"
-            @click="handleFavorite"
-            :class="{ favored: article.isFavored }"
-        >
-          <i class="favor-icon">{{ article.isFavored ? '★' : '☆' }}</i>
-          <span>{{ article.favorCount || 0 }}</span>
-        </button>
-      </div>
-
-      <!-- 评论区组件 -->
-      <CommentSection
-          v-if="currentUid"
-          :aid="article.aid"
-          :current-uid="currentUid"
-      />
     </div>
     <!-- 错误状态 -->
     <div v-else class="error">文章加载失败</div>
@@ -78,12 +95,48 @@ export default {
     const store = useStore()
     const currentUser = computed(() => store.getters.currentUser)
     const currentUid = computed(() => currentUser.value?.uid)
-    console.log("uid:{}",currentUid.value)
-    console.log("uid type:",typeof currentUid.value)
-    const renderedContent = computed(() => {
-      if (!article.value || !article.value.content) return ''
-      return md.render(article.value.content)
-    })
+    
+    const renderedHtml = ref('')
+    const toc = ref([])
+
+    const processMarkdown = (content) => {
+      if (!content) {
+        renderedHtml.value = ''
+        toc.value = []
+        return
+      }
+      const tokens = md.parse(content, {})
+      const tocData = []
+
+      tokens.forEach((token, index) => {
+        if (token.type === 'heading_open') {
+          // 获取标题内容（下一个 token 是 inline）
+          const inlineToken = tokens[index + 1]
+          const title = inlineToken ? inlineToken.content : ''
+          const level = parseInt(token.tag.slice(1))
+          const slug = `heading-${index}`
+
+          token.attrSet('id', slug)
+
+          tocData.push({
+            id: slug,
+            title,
+            level
+          })
+        }
+      })
+
+      toc.value = tocData
+      renderedHtml.value = md.renderer.render(tokens, md.options, {})
+    }
+
+    const scrollToHeading = (id) => {
+      const element = document.getElementById(id)
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' })
+      }
+    }
+
     // 格式化日期（去掉参数类型）
     const formatDate = (dateString) => {
       const date = new Date(dateString)
@@ -153,6 +206,8 @@ export default {
         article.value.isFavored = response.data.favored
         article.value.likesCount = article.value.likesCount || 0
         article.value.favorCount = article.value.favorCount || 0
+        
+        processMarkdown(article.value.content)
       } catch (error) {
         console.error('加载文章失败:', error)
         article.value = null
@@ -178,7 +233,9 @@ export default {
       formatDate,
       handleLike,
       handleFavorite,
-      renderedContent
+      renderedHtml,
+      toc,
+      scrollToHeading
     }
   }
 }
@@ -187,10 +244,69 @@ export default {
 <style scoped>
 /* 样式部分完全不变，保留原逻辑 */
 .article-detail {
-  max-width: 1000px;
+  max-width: 1400px;
   margin: 2rem auto;
   padding: 0 1rem;
 }
+
+.detail-container {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  position: relative;
+}
+
+.sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 20px;
+}
+
+.toc-content {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+}
+
+.toc-content h3 {
+  margin: 0 0 1rem;
+  font-size: 1.2rem;
+  color: #2c3e50;
+  border-bottom: 1px solid #ecf0f1;
+  padding-bottom: 0.5rem;
+}
+
+.toc-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.toc-item {
+  padding: 6px 0;
+  cursor: pointer;
+  color: #34495e;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  transition: color 0.2s;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.toc-item:hover {
+  color: #5588f4;
+}
+
+.toc-level-1 { font-weight: bold; margin-top: 0.5rem; }
+.toc-level-2 { padding-left: 1rem; }
+.toc-level-3 { padding-left: 2rem; font-size: 0.9rem; }
+.toc-level-4 { padding-left: 3rem; font-size: 0.85rem; }
+.toc-level-5, .toc-level-6 { padding-left: 4rem; font-size: 0.85rem; }
 
 .loading, .error {
   text-align: center;
@@ -199,11 +315,28 @@ export default {
 }
 
 .article-content {
+  flex: 1;
+  min-width: 0;
   background: white;
   padding: 2rem;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
+
+@media (max-width: 1024px) {
+  .detail-container {
+    flex-direction: column;
+  }
+  .sidebar {
+    width: 100%;
+    position: static;
+    margin-bottom: 20px;
+  }
+  .toc-content {
+    max-height: 300px;
+  }
+}
+
 
 .article-content h1 {
   color: #2c3e50;
@@ -282,8 +415,8 @@ export default {
 /* 返回首页按钮 */
 .back-button {
   position: absolute;
-  top: 150px;
-  right: 300px;
+  top: 2rem;
+  right: 2rem;
   display: flex;
   align-items: center;
   cursor: pointer;
