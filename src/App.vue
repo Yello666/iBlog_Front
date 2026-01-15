@@ -46,19 +46,26 @@
 <!--      显示根目录，显示src/route/index.js中定义的/显示的vue组件:Home.vue-->
       <router-view />
     </main>
+    
+    <!-- 全局加载动画 -->
+    <LoadingSpinner v-if="globalLoading" :fullscreen="true" text="页面加载中..." />
   </div>
 </template>
 
 <!--<script> 标签内的代码用于定义组件的逻辑部分-->
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex'
+import LoadingSpinner from './components/LoadingSpinner.vue'
 
 //导出了APP，会在main.js里面被引用
 export default {
   name: 'iBLOG',// 组件名称（调试和开发工具中显示）,在main.js中引入，用于创建vue项目
+  components: {
+    LoadingSpinner
+  },
   // 通过 Vuex 获取全局状态（登录状态、用户信息等），在store/index.js里面
   computed: {
-    ...mapState(['user']),//在state中获取
+    ...mapState(['user', 'globalLoading']),//在state中获取
     ...mapGetters(['isAuthenticated', 'currentUser', 'isAdmin'])//经过计算后的action的getter中获取
   },
   methods: {

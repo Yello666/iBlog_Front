@@ -75,6 +75,11 @@ const router = createRouter({//创建路由实例
 //路由守卫（router.beforeEach）
 //这是全局前置守卫，作用是在页面跳转前检查权限，控制是否允许访问目标页面。
 router.beforeEach((to, from, next) => {
+    // 显示全局加载动画（仅在路由实际切换时显示，避免同路由刷新时闪烁）
+    if (to.path !== from.path) {
+        store.commit('SET_GLOBAL_LOADING', true)
+    }
+    
     // 获取当前用户状态：是否登录、是否为管理员
     const isAuthenticated = store.state.isAuthenticated
     const isAdmin = store.getters.isAdmin
@@ -93,6 +98,14 @@ router.beforeEach((to, from, next) => {
         // 所有条件都满足 → 允许访问目标页
         next()
     }
+})
+
+// 路由切换完成后隐藏加载动画
+router.afterEach(() => {
+    // 使用 setTimeout 确保组件已渲染，避免闪烁
+    setTimeout(() => {
+        store.commit('SET_GLOBAL_LOADING', false)
+    }, 100)
 })
 
 export default router

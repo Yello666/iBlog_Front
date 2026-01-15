@@ -1,6 +1,6 @@
 <template>
   <div class="article-list">
-    <div v-if="loading" class="loading">加载中...</div>
+    <ArticleSkeleton v-if="loading" :count="hotArticleNum" :show-tags="true" />
 
     <div v-else-if="articles.length === 0" class="no-articles">
       暂无文章
@@ -47,9 +47,13 @@
 <script>
 import { articleAPI } from '../api/article'
 import {userAPI} from "@/api/user.js";
+import ArticleSkeleton from './ArticleSkeleton.vue';
 
 export default {
   name: 'ArticleList',
+  components: {
+    ArticleSkeleton
+  },
   data() {
     return {
       authorMap: {}, // 存储 uid -> userName 的映射（关键！）
@@ -116,23 +120,30 @@ export default {
 
     },
     async getAuthorMap(uids){
-      const authorMap = {}
-      for (const uid of uids) {
-        // console.log(uid)
+      // 使用 Promise.all 并行请求所有用户信息，大幅减少总等待时间
+      const promises = uids.map(async (uid) => {
         try {
-          // 调用用户 API 获取单个用户信息
           const response = await userAPI.getUser(uid)
           if (response.code === 200) {
-            // 接口返回 { data: { uid, userName,....} }
-            authorMap[uid] = response.data.userName
+            return { uid, userName: response.data.userName }
           } else {
-            authorMap[uid] = '未知用户'
+            return { uid, userName: '未知用户' }
           }
         } catch (error) {
           console.error(`获取 uid=${uid} 的用户信息失败:`, error)
-          authorMap[uid] = '获取失败'
+          return { uid, userName: '获取失败' }
         }
-      }
+      })
+      
+      // 等待所有请求完成
+      const results = await Promise.all(promises)
+      
+      // 将结果转换为 authorMap 对象
+      const authorMap = {}
+      results.forEach(({ uid, userName }) => {
+        authorMap[uid] = userName
+      })
+      
       return authorMap
     },
 
@@ -142,7 +153,7 @@ export default {
 </script>
 
 <style scoped>
-.loading, .no-articles {
+.no-articles {
   text-align: center;
   padding: 2rem;
   color: #7f8c8d;

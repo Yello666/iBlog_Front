@@ -14,10 +14,11 @@ export default createStore({
     state: { // 数据仓库（相当于 data）
         user: JSON.parse(localStorage.getItem('user')) || null,  // 存储当前登录用户的详细信息（如用户名、角色）
         token: localStorage.getItem('token') || null,// 存储用户登录凭证（Token）
-        // 从本地存储读取 Token，实现“刷新页面后保持登录状态”
-        isAuthenticated: !!localStorage.getItem('token')
+        // 从本地存储读取 Token，实现"刷新页面后保持登录状态"
+        isAuthenticated: !!localStorage.getItem('token'),
         // 判断用户是否登录：Token 存在则为 true（已登录），否则为 false（未登录）
         //！！是强制将返回值转换为bool值的快速写法。
+        globalLoading: false // 全局加载状态，用于路由切换时的加载提示
     },
     // 修改 state 的 “唯一途径”Vuex 规定：不能直接在组件中修改 state，必须通过 mutations 来修改。
     // mutations 是同步方法，负责更新 state 的数据，确保状态修改可追踪。
@@ -48,8 +49,12 @@ export default createStore({
             state.user = null//清空 state 中的用户信息、Token、登录状态
             state.token = null
             state.isAuthenticated = false
-            localStorage.removeItem('token')//删除本地存储的 Token，实现 “退出登录”
+            localStorage.removeItem('token')//删除本地存储的 Token，实现 "退出登录"
             localStorage.removeItem('user')  // ✅ 退出时清理
+        },
+        // 设置全局加载状态
+        SET_GLOBAL_LOADING(state, loading) {
+            state.globalLoading = loading
         }
     },
 //actions 主要用于处理异步操作（比如调用后端接口）
