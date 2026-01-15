@@ -18,7 +18,7 @@
         <span>修改时间: {{ formatDate(article.updatedAt) }}</span>
       </div>
 
-      <div class="article-body" v-html="article.content"></div>
+      <div class="article-body" v-html="renderedContent"></div>
 
       <!-- 点赞收藏区域（左下角） -->
       <div class="article-actions">
@@ -74,6 +74,106 @@ export default {
     const currentUid = computed(() => currentUser.value?.uid) //currentUser.value存在的话，就获取其uid
     console.log("uid:{}",currentUid.value)
     console.log("uid type:",typeof currentUid.value)
+
+    const escapeHtml = (str) => {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+    }
+
+    const markdownToHtml = (markdown) => {
+      if (!markdown) return ''
+      const lines = markdown.split(/\r?\n/)
+      let html = ''
+      let inCodeBlock = false
+      let inOl = false
+      let inUl = false
+
+      const closeLists = () => {
+        if (inOl) {
+          html += '</ol>'
+          inOl = false
+        }
+        if (inUl) {
+          html += '</ul>'
+          inUl = false
+        }
+      }
+
+      for (let i = 0; i < lines.length; i++) {
+        const rawLine = lines[i]
+        const line = rawLine.trimEnd()
+        const trimmed = line.trim()
+
+        if (trimmed === '```') {
+          if (!inCodeBlock) {
+            closeLists()
+            inCodeBlock = true
+            html += '<pre><code>'
+          } else {
+            inCodeBlock = false
+            html += '</code></pre>'
+          }
+          continue
+        }
+
+        if (inCodeBlock) {
+          html += escapeHtml(rawLine) + '\n'
+          continue
+        }
+
+        if (!trimmed) {
+          closeLists()
+          continue
+        }
+
+        const headingMatch = trimmed.match(/^(#{1,6})\s+(.*)$/)
+        if (headingMatch) {
+          closeLists()
+          const level = headingMatch[1].length
+          const text = headingMatch[2]
+          html += `<h${level}>${escapeHtml(text)}</h${level}>`
+          continue
+        }
+
+        const olMatch = trimmed.match(/^(\d+)\.\s+(.*)$/)
+        if (olMatch) {
+          if (!inOl) {
+            closeLists()
+            inOl = true
+            html += '<ol>'
+          }
+          html += `<li>${escapeHtml(olMatch[2])}</li>`
+          continue
+        }
+
+        const ulMatch = trimmed.match(/^[-*+]\s+(.*)$/)
+        if (ulMatch) {
+          if (!inUl) {
+            closeLists()
+            inUl = true
+            html += '<ul>'
+          }
+          html += `<li>${escapeHtml(ulMatch[1])}</li>`
+          continue
+        }
+
+        closeLists()
+        html += `<p>${escapeHtml(trimmed)}</p>`
+      }
+
+      closeLists()
+      if (inCodeBlock) {
+        html += '</code></pre>'
+      }
+      return html
+    }
+
+    const renderedContent = computed(() => {
+      if (!article.value || !article.value.content) return ''
+      return markdownToHtml(article.value.content)
+    })
     // 格式化日期（去掉参数类型）
     const formatDate = (dateString) => {
       const date = new Date(dateString)
@@ -167,7 +267,8 @@ export default {
       currentUid,
       formatDate,
       handleLike,
-      handleFavorite
+      handleFavorite,
+      renderedContent
     }
   }
 }
