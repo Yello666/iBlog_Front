@@ -55,7 +55,7 @@
 <!--<script> 标签内的代码用于定义组件的逻辑部分-->
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex'
-import LoadingSpinner from './components/LoadingSpinner.vue'
+import LoadingSpinner from '@/components/LoadingSpinner.vue'
 
 //导出了APP，会在main.js里面被引用
 export default {
