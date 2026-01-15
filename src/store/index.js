@@ -82,7 +82,17 @@ export default createStore({
                 }
                 return { code: response.code, message: response.message }
             } catch (error) {
-                return { code: -1, message: error.response?.message || '登录失败' }
+                console.error('登录API错误详情:', error);
+                // 更详细的错误信息处理
+                if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+                    return { code: -1, message: '请求超时，请检查网络连接后重试' };
+                } else if (error.response) {
+                    return { code: -1, message: error.response.data?.message || `服务器错误: ${error.response.status}` };
+                } else if (error.request) {
+                    return { code: -1, message: '网络错误，请检查网络连接后重试' };
+                } else {
+                    return { code: -1, message: error.message || '登录失败，请稍后重试' };
+                }
             }
         },
         //用户注册

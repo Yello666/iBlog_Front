@@ -59,17 +59,22 @@ export default {
     async login() {
       this.loading = true
       this.error = ''
-      //通过dispatch调用store/index.js里面的login函数，并传入一个列表
-      // 里面包括loginInfo对象，在login那里要加{}，才能获取到loginInfo对象
-      const result = await this.$store.dispatch('login', { loginInfo: this.loginInfo })
+      try {
+        //通过dispatch调用store/index.js里面的login函数，并传入一个列表
+        // 里面包括loginInfo对象，在login那里要加{}，才能获取到loginInfo对象
+        const result = await this.$store.dispatch('login', { loginInfo: this.loginInfo })
 
-      if (result.code===200) {
-        this.$router.push('/')
-      } else {
-        this.error = result.message
+        if (result.code===200) {
+          this.$router.push('/')
+        } else {
+          this.error = result.message || '登录失败，请稍后重试'
+        }
+      } catch (err) {
+        console.error('登录错误:', err)
+        this.error = '登录请求失败，请检查网络连接或稍后重试'
+      } finally {
+        this.loading = false
       }
-
-      this.loading = false
     }
   }
 }
