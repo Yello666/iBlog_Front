@@ -148,6 +148,10 @@ export default {
         article.value = null
       } finally {
         loading.value = false
+        // 数据加载完成后，隐藏全局loading
+        setTimeout(() => {
+          store.commit('SET_GLOBAL_LOADING', false)
+        }, 300)
       }
     }
 

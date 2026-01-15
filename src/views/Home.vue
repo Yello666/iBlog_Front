@@ -7,12 +7,12 @@
 
     <div class="articles-section">
       <h2>推荐文章</h2>
-      <ArticleList />
+      <ArticleList ref="articleList" />
     </div>
 
     <div class="articles-section">
       <h2>最新文章</h2>
-      <LatestArticleList />
+      <LatestArticleList ref="latestArticleList" />
     </div>
   </div>
 </template>
@@ -26,6 +26,46 @@ export default {
   components: {
     ArticleList,
     LatestArticleList
+  },
+  mounted() {
+    // 定期检查子组件的加载状态
+    this.checkLoadingStatus()
+  },
+  beforeUnmount() {
+    // 组件卸载时清理定时器
+    if (this.loadingCheckTimer) {
+      clearTimeout(this.loadingCheckTimer)
+    }
+  },
+  methods: {
+    checkLoadingStatus() {
+      // 如果loading已经隐藏，停止检查
+      if (!this.$store.state.globalLoading) {
+        return
+      }
+      
+      // 检查两个子组件是否都加载完成
+      const articleList = this.$refs.articleList
+      const latestArticleList = this.$refs.latestArticleList
+      
+      if (articleList && latestArticleList) {
+        // 如果两个组件都不在loading状态，隐藏全局loading
+        if (!articleList.loading && !latestArticleList.loading) {
+          // 延迟一点确保DOM已更新
+          this.$nextTick(() => {
+            setTimeout(() => {
+              this.$store.commit('SET_GLOBAL_LOADING', false)
+            }, 300)
+          })
+          return
+        }
+      }
+      
+      // 如果还在加载，继续检查（每500ms检查一次）
+      this.loadingCheckTimer = setTimeout(() => {
+        this.checkLoadingStatus()
+      }, 500)
+    }
   }
 }
 </script>

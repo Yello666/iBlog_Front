@@ -75,8 +75,9 @@ const router = createRouter({//创建路由实例
 //路由守卫（router.beforeEach）
 //这是全局前置守卫，作用是在页面跳转前检查权限，控制是否允许访问目标页面。
 router.beforeEach((to, from, next) => {
-    // 显示全局加载动画（仅在路由实际切换时显示，避免同路由刷新时闪烁）
-    if (to.path !== from.path) {
+    // 显示全局加载动画
+    // 处理首次加载（from.name 为 null）或路由切换的情况
+    if (!from.name || to.path !== from.path) {
         store.commit('SET_GLOBAL_LOADING', true)
     }
     
@@ -101,11 +102,19 @@ router.beforeEach((to, from, next) => {
 })
 
 // 路由切换完成后隐藏加载动画
-router.afterEach(() => {
-    // 使用 setTimeout 确保组件已渲染，避免闪烁
+router.afterEach((to, from) => {
+    // 设置一个fallback：如果组件没有主动隐藏loading，30秒后自动隐藏
+    // 这样可以防止loading永远显示（比如组件出错的情况）
     setTimeout(() => {
-        store.commit('SET_GLOBAL_LOADING', false)
-    }, 100)
+        // 只有在loading还在显示时才隐藏（避免组件已经隐藏了）
+        if (store.state.globalLoading) {
+            console.warn('Loading timeout, hiding loading animation')
+            store.commit('SET_GLOBAL_LOADING', false)
+        }
+    }, 30000) // 30秒超时
+    
+    // 注意：实际的loading隐藏应该由各个页面组件在数据加载完成后控制
+    // 例如：Home组件会在ArticleList和LatestArticleList都加载完成后隐藏loading
 })
 
 export default router
