@@ -55,6 +55,10 @@ export default {
       error: ''
     }
   },
+  mounted() {
+    // 页面加载完成后，关闭全局加载动画
+    this.$store.commit('SET_GLOBAL_LOADING', false)
+  },
   methods: {
     async login() {
       this.loading = true

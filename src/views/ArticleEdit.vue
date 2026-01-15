@@ -67,6 +67,8 @@ export default {
 
     // 初始化：编辑模式下加载文章数据
     onMounted(async () => {
+      // 页面加载完成后，关闭全局加载动画
+      store.commit('SET_GLOBAL_LOADING', false)
       if (isEditMode.value) {
         try {
           const aid = route.query.aid

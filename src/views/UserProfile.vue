@@ -146,6 +146,8 @@ export default {
     if (!currentUid) {
       this.error = '未检测到登录状态，请先登录'
       this.loading = false
+      // 关闭全局loading
+      this.$store.commit('SET_GLOBAL_LOADING', false)
       return
     }
 
@@ -166,6 +168,8 @@ export default {
       console.error('获取用户信息失败:', err)
     } finally {
       this.loading = false
+      // 关闭全局loading
+      this.$store.commit('SET_GLOBAL_LOADING', false)
     }
   },
 

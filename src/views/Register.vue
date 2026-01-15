@@ -68,6 +68,9 @@ export default {
       code:0,
     }
   },
+  mounted() {
+    this.$store.commit('SET_GLOBAL_LOADING', false)
+  },
   methods: {
     async register() {
       this.loading = true

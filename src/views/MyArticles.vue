@@ -79,6 +79,9 @@ export default {
     // 监听滚动事件，实现下拉加载
     window.addEventListener('scroll', this.handleScroll)
   },
+  mounted() {
+    this.$store.commit('SET_GLOBAL_LOADING', false)
+  },
   beforeDestroy() {
     // 移除滚动监听，避免内存泄漏
     window.removeEventListener('scroll', this.handleScroll)
