@@ -5,7 +5,7 @@
     <div v-if="loading" class="loading">加载中...</div>
 
     <!-- 文章内容 -->
-    <div v-else-if="article" class="detail-container">
+    <div v-else-if="article" class="detail-container" :class="{ 'no-sidebar': toc.length === 0 }">
       <!-- 侧边栏目录 -->
       <aside class="sidebar" v-if="toc.length > 0">
         <div class="toc-content">
@@ -455,4 +455,9 @@ export default {
   transform: translateX(0);
 }
 
+/* 当没有侧边栏目录时，评论区靠左对齐并填满宽度，避免两边留白过多 */
+.detail-container.no-sidebar :deep(.comment-section) {
+  margin-left: 0;
+  max-width: 100%;
+}
 </style>
