@@ -59,7 +59,6 @@
 
         <!-- 评论区组件 -->
         <CommentSection
-            v-if="currentUid"
             :aid="article.aid"
             :current-uid="currentUid"
         />

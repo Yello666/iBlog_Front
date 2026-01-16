@@ -87,7 +87,8 @@ const props = defineProps({
   },
   currentUid: {
     type: [Number, String],
-    required: true
+    required: false,
+    default: null
   }
 })
 
