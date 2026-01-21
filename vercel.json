@@ -1,8 +1,13 @@
 {
   "rewrites": [
     {
+      "source": "/api/(.*)",
+      "destination": "https://yellow-iblog.cn/$1"
+    },
+    {
       "source": "/(.*)",
       "destination": "/"
     }
-  ]
+  ],
+  "regions": ["sgp1"]
 }
