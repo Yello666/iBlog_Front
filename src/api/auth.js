@@ -9,6 +9,8 @@ const api = axios.create({
     headers: {
         'Content-Type': 'application/json'
     },
+    //axios走fetch，而不是xhr
+    adapter:'fetch',
     // 添加请求超时时间，防止长时间等待
     timeout: 15000, // 15秒超时
     // 关键：修改 axios 的默认 JSON 解析器，在解析阶段就处理大整数

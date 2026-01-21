@@ -18,7 +18,8 @@ export default defineConfig({
   },
 //例如import MyComp from '@/components/MyComp.vue'可以等价为import MyComp from '/src/components/MyComp.vue'
 
-    //本地开发服务器代理（server.proxy），使用这个会让Vite 本地服务器代为转发，不是浏览器发，这个只在本地运行时有效，在云上运行时无效。
+    //本地开发服务器代理（server.proxy），使用这个会让Vite 本地服务器代为转发，不是浏览器发，
+    // 仅当在本地执行npm run dev（Vite 启动本地开发服务器，端口 5173）时生效；
     // 浏览器默认禁止从 5173 向 8080 发请求（跨域）....
     server: {
         proxy: {
